@@ -7,7 +7,7 @@
     "start": "npm run build && npm run serve",
     "serve": "node backend/main.mjs",
     "build": "npm run front:build",
-    "front:build": "tsc && vite build frontend --outDir ../dist",
+    "front:build": "tsc && vite build frontend --outDir ../dist --emptyOutDir",
     "dev": "vite",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview"

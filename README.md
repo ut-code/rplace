@@ -1,3 +1,24 @@
+# MAYFEST/RPLACE 
+
+## how to setup
+
+```shell
+npm ci;
+```
+
+## how to run
+
+```shell
+npm start
+```
+
+## Generated files
+
+do NOT touch files inside these 3 directories. they will be overwritten.
+./node_modules/ 
+./tsc-dist/ 
+./vite-dist/ 
+
 # React + TypeScript + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
@@ -17,12 +38,12 @@ If you are developing a production application, we recommend updating the config
 export default {
   // other rules...
   parserOptions: {
-    ecmaVersion: 'latest',
-    sourceType: 'module',
-    project: ['./tsconfig.json', './tsconfig.node.json'],
+    ecmaVersion: "latest",
+    sourceType: "module",
+    project: ["./tsconfig.json", "./tsconfig.node.json"],
     tsconfigRootDir: __dirname,
   },
-}
+};
 ```
 
 - Replace `plugin:@typescript-eslint/recommended` to `plugin:@typescript-eslint/recommended-type-checked` or `plugin:@typescript-eslint/strict-type-checked`

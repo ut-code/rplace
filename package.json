@@ -4,11 +4,18 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "start": "npm run build && npm run serve",
-    "serve": "node backend/main.mjs",
-    "build": "npm run front:build",
-    "front:build": "tsc && vite build frontend --outDir ../dist --emptyOutDir",
-    "dev": "vite",
+    "start": "(trap 'kill 0' SIGINT; npm run frontend:start & npm run backend:start & wait)",
+    "serve": "(trap 'kill 0' SIGINT; npm run frontend:serve & npm run backend:serve & wait)",
+    "build": "tsc; npm run frontend:build && npm run backend:build",
+    "frontend:start": "npm run frontend:build && npm run frontend:serve",
+    "backend:start": "npm run backend:build && npm run backend:serve",
+    "frontend:build": "vite build frontend --outDir ../vite-dist --emptyOutDir",
+    "backend:build": "tsc",
+    "frontend:serve": "node ./tsc-dist/frontend/serve.js",
+    "backend:serve": "node ./tsc-dist/backend/main.js",
+    "precommit": "(trap 'kill 0' SIGINT; (npm run fmt:silent && echo 'prettier finished') & (npm run lint && echo 'linter finished') & wait)",
+    "fmt": "npx prettier . --write",
+    "fmt:silent": "npx prettier . --write --log-level silent",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview"
   },
@@ -19,14 +26,19 @@
     "react-dom": "^18.2.0"
   },
   "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.11.19",
     "@types/react": "^18.2.55",
     "@types/react-dom": "^18.2.19",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "@typescript-eslint/parser": "^6.21.0",
     "@vitejs/plugin-react-swc": "^3.5.0",
     "eslint": "^8.56.0",
+    "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.5",
+    "prettier": "^3.2.5",
     "typescript": "^5.2.2",
     "vite": "^5.1.0"
   }

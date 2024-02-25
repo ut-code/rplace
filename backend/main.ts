@@ -8,7 +8,6 @@ const app = express();
 dotenv.config(process.env.NODE_ENV === "production" ? {
     path: ".env.production"
 } : undefined);
-console.log(process.env.WEB_ORIGIN);
 app.use(cors({origin: process.env.WEB_ORIGIN}));
 
 app.use(express.json());

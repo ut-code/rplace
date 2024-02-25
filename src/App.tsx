@@ -1,10 +1,19 @@
+import React, { useEffect } from "react";
 import { useState } from "react";
 import reactLogo from "./assets/react.svg";
 import viteLogo from "/vite.svg";
 import "./App.css";
 
+const BACKEND_URL = "http://localhost:3200";
+// requires CORS access perm.
+
 function App() {
-  const [count, setCount] = useState(0);
+  let [count, setCount] = useState<number | null>(0);
+
+  // this is only run once on page load
+  useEffect(() => {
+    fetch(BACKEND_URL + "/count").then(res => res.json()).then(json => json.count).then(setCount);
+  }, []);
 
   return (
     <>
@@ -18,9 +27,15 @@ function App() {
       </div>
       <h1>Vite + React</h1>
       <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
+        {count != null ? 
+        <button onClick={() => {
+          console.log("clicked");
+          send(BACKEND_URL + "/add", { number: Math.random() }).then((json => setCount(json.count)))
+          }}>
           count is {count}
-        </button>
+        </button> : 
+        <div> loading... </div> }
+
         <p>
           Edit <code>src/App.tsx</code> and save to test HMR
         </p>
@@ -33,3 +48,12 @@ function App() {
 }
 
 export default App;
+
+/// sends data in POST request
+async function send(path: string, data: object) {
+  return await fetch(path, {
+    method: "post",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  }).then(res => res.json());
+}

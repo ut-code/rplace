@@ -4,14 +4,16 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "start": "(trap 'kill 0' SIGINT; npm run frontend:start & npm run backend:start & wait)",
-    "serve": "npm run backend:serve",
-    "build": "tsc; npm run frontend:build && npm run backend:build",
-    "frontend:start": "npm run frontend:build",
-    "backend:start": "npm run backend:build && npm run backend:serve",
+    "start": "npm run backend:build && npm run serve:dev",
+    "release": "npm run build && npm run serve:release",
+    "serve:dev": "npx vite & npm run backend:serve",
+    "serve:release": "exit 1 && 'TODO: write this later'",
+    "build": "npx tsc; npm run frontend:build && npm run backend:build",
+    "frontend:dev": "npx vite",
+    "backend:dev": "npm run backend:build && npm run backend:serve",
     "frontend:build": "vite build frontend --outDir ../vite-dist --emptyOutDir",
-    "backend:build": "tsc",
-    "backend:serve": "node ./tsc-dist/backend/main.js",
+    "backend:build": "rm -rf tsc-dist && tsc",
+    "backend:serve": "node ./tsc-dist/main.js",
     "precommit": "(trap 'kill 0' SIGINT; (npm run fmt:silent && echo 'prettier finished') & (npm run lint && echo 'linter finished') & wait)",
     "fmt": "npx prettier . --write",
     "fmt:silent": "npx prettier . --write --log-level silent",
@@ -19,13 +21,13 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@types/cors": "^2.8.17",
     "cors": "^2.8.5",
     "express": "^4.18.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },
   "devDependencies": {
-    "@types/cors": "^2.8.17",
     "@types/express": "^4.17.21",
     "@types/node": "^20.11.19",
     "@types/react": "^18.2.55",

@@ -1,4 +1,4 @@
-# MAYFEST/RPLACE 
+# MAYFEST/RPLACE
 
 ## how to setup
 
@@ -15,9 +15,14 @@ npm start
 ## Generated files
 
 do NOT touch files inside these 3 directories. they will be overwritten.
-./node_modules/ 
-./tsc-dist/ 
-./vite-dist/ 
+./node_modules/
+./tsc-dist/
+./vite-dist/
+
+## Hot Reload
+
+Vite (frontend) ... supports hot reload.
+tsc + express (backend) ... does NOT support hot reload. reload manually.
 
 # React + TypeScript + Vite
 

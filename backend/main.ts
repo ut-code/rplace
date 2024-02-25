@@ -1,14 +1,16 @@
 import express from "express";
 import cors from "cors";
-
-// const FRONTEND_URL = "http://localhost:5173";
+import dotenv from "dotenv";
 
 const app = express();
-/* {
-    origin: FRONTEND_URL,
-}; */
 
-app.use(cors());
+// switch environment variable on production
+dotenv.config(process.env.NODE_ENV === "production" ? {
+    path: ".env.production"
+} : undefined);
+console.log(process.env.WEB_ORIGIN);
+app.use(cors({origin: process.env.WEB_ORIGIN}));
+
 app.use(express.json());
 
 let count = 0;

@@ -1,9 +1,14 @@
 # MAYFEST/RPLACE
 
+## IMPORTANT
+
+this is only intended to be run on Linux.
+do NOT clone this in Windows, or it will probably not work.
+
 ## how to setup
 
 ```shell
-npm ci;
+npm run setup
 ```
 
 ## how to run
@@ -11,6 +16,32 @@ npm ci;
 ```shell
 npm start
 ```
+
+---
+
+alternatively you can also:
+```shell
+npm run frontend:dev
+```
+and
+```shell
+npm run backend:dev
+```
+in two separate process
+
+## how to run (production mode)
+
+```shell for frontend (currently not working)
+npm run frontend:build
+```
+```shell for backend
+npm run backend:build
+npm run backend:serve:release
+```
+
+things that change on release mode:
+- environment variables (WEB_ORIGIN and VITE_API_ENDPOINT)
+- vite is built (in devmode it's hot-reloaded)
 
 ## Generated files
 
@@ -23,6 +54,11 @@ do NOT touch files inside these 3 directories. they will be overwritten.
 
 Vite (frontend) ... supports hot reload.
 tsc + express (backend) ... does NOT support hot reload. reload manually.
+
+## TODO
+
+- write .env.production for prod env
+- fix vite build not working
 
 # React + TypeScript + Vite
 

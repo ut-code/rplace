@@ -6,14 +6,16 @@
   "scripts": {
     "start": "npm run backend:build && npm run serve:dev",
     "release": "npm run build && npm run serve:release",
-    "serve:dev": "npx vite & npm run backend:serve",
+    "serve:dev": "(trap 'kill 0' SIGINT; npx vite & npm run backend:serve & wait)",
     "serve:release": "exit 1 && 'TODO: write this later'",
-    "build": "npx tsc; npm run frontend:build && npm run backend:build",
+    "build": "npx tsc && npm run frontend:build && npm run backend:build",
     "frontend:dev": "npx vite",
     "backend:dev": "npm run backend:build && npm run backend:serve",
     "frontend:build": "vite build frontend --outDir ../vite-dist --emptyOutDir",
     "backend:build": "rm -rf tsc-dist && tsc",
     "backend:serve": "node ./tsc-dist/main.js",
+    "backend:serve:release": "NODE_ENV=production node ./tsc-dist/main.js",
+    "setup": "cp .env.sample .env && npm ci",
     "precommit": "(trap 'kill 0' SIGINT; (npm run fmt:silent && echo 'prettier finished') & (npm run lint && echo 'linter finished') & wait)",
     "fmt": "npx prettier . --write",
     "fmt:silent": "npx prettier . --write --log-level silent",
@@ -23,6 +25,7 @@
   "dependencies": {
     "@types/cors": "^2.8.17",
     "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
     "express": "^4.18.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"

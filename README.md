@@ -5,6 +5,8 @@
 this is only intended to be run on Linux.
 do NOT clone this in Windows, or it will probably not work.
 
+CORS somehow doesn't work on VS Code WSL Terminal. (???) use command prompt to connect to WSL. 
+
 ## how to setup
 
 ```shell

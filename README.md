@@ -5,7 +5,9 @@
 this is only intended to be run on Linux.
 do NOT clone this in Windows, or it will probably not work.
 
-CORS somehow doesn't work on VS Code WSL Terminal. (???) use command prompt to connect to WSL. 
+it sometimes does not seem to connect to backend due to "CORS Request Blocked."
+this is probably because VS Code Terminal opened 127.0.0.1 when it's supposed to open localhost, making the cors package think the origin is not allowed.
+solution: open `http://localhost:5173` manually, or use command prompt to launch Vite then ctrl+click on that link.
 
 ## how to setup
 

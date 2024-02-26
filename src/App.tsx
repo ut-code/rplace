@@ -8,12 +8,18 @@ const BACKEND_URL = import.meta.env.VITE_API_ENDPOINT;
 // requires CORS access perm refer main.ts (backend) for cors perm.
 
 function App() {
-  let [count, setCount] = useState<number | null>(0);
+  let [count, setCount] = useState<number | null>(null);
 
-  // this is only run once on page load (careful: without 2nd arg, it would run whenever any existing variable changes)
+  // backend integration (with Cross-Origin Resource Share) example.
+  function fetchCount() {
+    get("/count").then(json => json.count).then(setCount);
+  }
+  // useEffect is run on each load/reload (careful: without 2nd arg, it would run whenever any existing variable changes)
   useEffect(() => {
-    get("/count").then(res => res.json()).then(json => json.count).then(setCount);
+    fetchCount();
   }, []);
+
+  // Socket.io example.
 
   return (
     <>

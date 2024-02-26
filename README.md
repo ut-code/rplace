@@ -45,7 +45,8 @@ npm run backend:serve:release
 
 things that change on release mode:
 - environment variables (WEB_ORIGIN and VITE_API_ENDPOINT)
-- vite is built (in devmode it's hot-reloaded)
+  - dotenv uses .env.production instead of .env
+- vite is built into static files (it's hot-reloaded in dev mode)
 
 ## Generated files
 

@@ -1,19 +1,16 @@
 import express from "express";
 import { Server } from "socket.io";
 import cors from "cors";
-import dotenv from "dotenv";
+
+import { NODE_ENV, WEB_ORIGIN, VITE_API_ENDPOINT} from "./env";
+
+const use = (...args: unknown[]) => {args;};
+use(NODE_ENV, VITE_API_ENDPOINT);
 
 const app = express();
 
-// switch environment variable on production
-dotenv.config(
-  process.env.NODE_ENV === "production"
-    ? {
-        path: ".env.production",
-      }
-    : undefined,
-);
-app.use(cors({ origin: process.env.WEB_ORIGIN }));
+
+app.use(cors({ origin: WEB_ORIGIN }));
 
 app.use(express.json());
 

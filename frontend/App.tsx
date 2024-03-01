@@ -2,11 +2,13 @@ import React, { useEffect } from "react";
 import { useState } from "react";
 
 import { socket } from "./socket.js";
+
+import { VITE_API_ENDPOINT } from "./env";
 import reactLogo from "./assets/react.svg";
 import viteLogo from "/vite.svg";
 import "./App.css";
 
-const BACKEND_URL = import.meta.env.VITE_API_ENDPOINT;
+const BACKEND_URL = VITE_API_ENDPOINT;
 // requires CORS access perm refer main.ts (backend) for cors perm.
 
 function App() {

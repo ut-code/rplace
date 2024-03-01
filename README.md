@@ -35,8 +35,9 @@ in two separate process
 
 ## how to run (production mode)
 
-```shell for frontend (currently not working)
+```shell for frontend
 npm run frontend:build
+echo "frontend build is done. now use static file hosting service to serve `./vite-dist`."
 ```
 ```shell for backend
 npm run backend:build

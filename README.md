@@ -24,13 +24,17 @@ npm start
 ---
 
 alternatively you can also:
+
 ```shell
 npm run frontend:dev
 ```
+
 and
+
 ```shell
 npm run backend:dev
 ```
+
 in two separate process
 
 ## how to run (production mode)
@@ -39,12 +43,14 @@ in two separate process
 npm run frontend:build
 echo "frontend build is done. now use static file hosting service to serve `./vite-dist`."
 ```
+
 ```shell for backend
 npm run backend:build
 npm run backend:serve:release
 ```
 
 things that change on release mode:
+
 - environment variables (WEB_ORIGIN and VITE_API_ENDPOINT)
   - dotenv uses .env.production instead of .env
 - vite is built into static files (it's hot-reloaded in dev mode)

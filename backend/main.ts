@@ -39,6 +39,6 @@ io.on('connection', (socket) => {
 /* * * * * * */
 
 const PORT = 3200;
-app.listen(PORT, 'localhost', () => {
+app.listen(PORT, () => {
     console.log(`|backend| Listening on ${PORT}...`);
 });

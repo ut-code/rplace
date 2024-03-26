@@ -4,6 +4,7 @@ import { useState } from "react";
 import { socket } from "./socket.js";
 
 import { VITE_API_ENDPOINT } from "./env";
+import {IntoImage} from "./IntoImage.js";
 import reactLogo from "./assets/react.svg";
 import viteLogo from "/vite.svg";
 import "./App.css";
@@ -49,17 +50,14 @@ function App() {
     };
   }, []);
 
+  const w = 256;
+  const h = 256;
+
+  const arr = createRandomArray(w, h);
+
   return (
     <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
+      <IntoImage arr={arr} w={w} h={h}></IntoImage>
       <div className="card">
         {count != null ? (
           <button
@@ -107,4 +105,18 @@ async function post(path: string, data: object) {
 
 async function get(path: string) {
   return await fetch(BACKEND_URL + path).then((res) => res.json());
+}
+
+function createRandomArray(width, height) {
+	const arr = new Uint8ClampedArray(width * height * 4); 
+	for (let h = 0; h < height; h++) {
+		for (let w = 0; w < width; w++) {
+			const idx = (h * width + w ) * 4;
+			arr[idx] = w % 256; // Red
+			arr[idx + 1] = h % 256; // Green
+			arr[idx + 2] = idx % 256; // Blue
+			arr[idx + 3] = 255; // Alpha (transparency)
+		}
+	}
+	return arr;
 }

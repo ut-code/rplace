@@ -22,7 +22,7 @@ function createRandomArray(width, height) {
 	return arr;
 }
 
-// below is also defiled in image-array.ts, use one from that file for prod.
+// below is also defined in image-array.ts, use one from that file for prod.
 function setImageData(image, arr, width, height) {
 
 	const canvas = document.createElement("canvas");

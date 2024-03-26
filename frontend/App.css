@@ -40,3 +40,22 @@
 .read-the-docs {
   color: #888;
 }
+
+.grid {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+}
+
+.grid-row {
+  display: flex;
+  gap: 1px;
+}
+
+.grid-cell {
+  width: 10px;
+  height: 10px;
+  border: 1px solid black;
+}
+

@@ -1,19 +1,20 @@
-import React, { useEffect } from "react";
-import { useState } from "react";
-
+import React, { useEffect, useState, useRef } from "react";
 import { socket } from "./socket.js";
-
 import { VITE_API_ENDPOINT } from "./env";
-import reactLogo from "./assets/react.svg";
-import viteLogo from "/vite.svg";
 import "./App.css";
 
 const BACKEND_URL = VITE_API_ENDPOINT;
-// requires CORS access perm refer main.ts (backend) for cors perm.
 
 function App() {
   const [count, setCount] = useState<number | null>(null);
   const [socketCount, setSocketCount] = useState<number | null>(null);
+  const [selectedRow, setSelectedRow] = useState<number | null>(null);
+  const [selectedColumn, setSelectedColumn] = useState<number | null>(null);
+  const gridRef = useRef<HTMLDivElement>(null);
+
+  const rowSize = 10;
+  const columnSize = 10;
+  const grid = Array(rowSize).fill(Array(columnSize).fill("#ffffff"));
 
   // backend integration (with Cross-Origin Resource Share) example.
   function fetchCount() {
@@ -49,47 +50,78 @@ function App() {
     };
   }, []);
 
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (selectedRow === null || selectedColumn === null) return;
+      switch (event.key) {
+        case "ArrowUp":
+          setSelectedRow((prevRow) => Math.max(prevRow - 1, 0));
+          break;
+        case "ArrowDown":
+          setSelectedRow((prevRow) => Math.min(prevRow + 1, rowSize - 1));
+          break;
+        case "ArrowLeft":
+          setSelectedColumn((prevColumn) => Math.max(prevColumn - 1, 0));
+          break;
+        case "ArrowRight":
+          setSelectedColumn((prevColumn) =>
+            Math.min(prevColumn + 1, columnSize - 1)
+          );
+          break;
+        default:
+          break;
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [selectedRow, selectedColumn]);
+
+  const handleCellClick = (rowIndex: number, columnIndex: number) => {
+    setSelectedRow(rowIndex);
+    setSelectedColumn(columnIndex);
+  };
+
   return (
     <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+      <h1>r/place</h1>
+      <div className="grid-container">
+        <div className="grid" style={{}} ref={gridRef}>
+          {grid.map((row, rowIndex) => (
+            <div key={rowIndex} className="grid-row">
+              {row.map((color, columnIndex) => (
+                <div
+                  key={columnIndex}
+                  className={`grid-cell ${selectedRow === rowIndex && selectedColumn === columnIndex ? "selected" : ""}`}
+                  style={{
+                    backgroundColor: color,
+                  }}
+                  onClick={() => handleCellClick(rowIndex, columnIndex)}
+                >
+                  {selectedRow === rowIndex &&
+                    selectedColumn === columnIndex && (
+                      <div className="selected-circle" />
+                    )}
+                </div>
+              ))}
+            </div>
+          ))}
+        </div>
+        <div className="selection-section">
+          {selectedRow !== null && selectedColumn !== null ? (
+            <p>
+              Selected pixel: Row{" "}
+              {selectedRow !== null ? selectedRow + 1 : "N/A"}, Column{" "}
+              {selectedColumn !== null ? selectedColumn + 1 : "N/A"}
+            </p>
+          ) : (
+            <p>No pixel selected</p>
+          )}
+        </div>
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        {count != null ? (
-          <button
-            onClick={() => {
-              post("/add", { number: 1 }).then((json) => setCount(json.count));
-            }}
-          >
-            count: {count}
-          </button>
-        ) : (
-          <div> loading... </div>
-        )}
-        {socketCount == null ? (
-          <>Loading WebSocket-based count...</>
-        ) : (
-          <button
-            onClick={() => {
-              socket.emit("add-socket-count", 1);
-            }}
-          >
-            WebSocket-based count: {socketCount}
-          </button>
-        )}
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
     </>
   );
 }

@@ -1,5 +1,5 @@
 function example() {
-	const width = 256, height = 256;
+	const width = 16, height = 16;
 
 	const image = document.getElementById("sample-image");
 	const arr = createRandomArray(width, height);
@@ -13,9 +13,9 @@ function createRandomArray(width, height) {
 	for (let h = 0; h < height; h++) {
 		for (let w = 0; w < width; w++) {
 			const idx = (h * width + w ) * 4;
-			arr[idx] = w % 256; // Red
-			arr[idx + 1] = h % 256; // Green
-			arr[idx + 2] = idx % 256; // Blue
+			arr[idx] = 16 * w % 256; // Red
+			arr[idx + 1] = 16 * h % 256; // Green
+			arr[idx + 2] = 16 * idx % 256; // Blue
 			arr[idx + 3] = 255; // Alpha (transparency)
 		}
 	}

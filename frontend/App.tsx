@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { socket } from "./socket.js";
 import { VITE_API_ENDPOINT } from "./env";
 import "./App.css";
+import { createRandomArray } from "./image-array-sample/example.js";
 
 const BACKEND_URL = VITE_API_ENDPOINT;
 
@@ -11,11 +12,15 @@ function App() {
   const [selectedRow, setSelectedRow] = useState<number | null>(null);
   const [selectedColumn, setSelectedColumn] = useState<number | null>(null);
   const gridRef = useRef<HTMLDivElement>(null);
+  const [gridColors, setGridColors] = useState<Uint8ClampedArray | null>(null);
 
-  const rowSize = 10;
-  const columnSize = 10;
-  const grid = Array(rowSize).fill(Array(columnSize).fill("#ffffff"));
-
+  const rowSize = 16;
+  const columnSize = 16;
+  //const grid = Array(rowSize).fill(Array(columnSize).fill("#ffffff"));
+  useEffect(() => {
+    const colors = createRandomArray(columnSize, rowSize);
+    setGridColors(colors);
+  }, []);
   // backend integration (with Cross-Origin Resource Share) example.
   function fetchCount() {
     get("/count")
@@ -48,6 +53,11 @@ function App() {
       socket.off("update-socket-count", updateSocketCount);
       socket.off("respond-socket-count", onRespondSocketCount);
     };
+  }, []);
+
+  useEffect(() => {
+    const colors = createRandomArray(columnSize, rowSize);
+    setGridColors(colors);
   }, []);
 
   useEffect(() => {
@@ -90,25 +100,39 @@ function App() {
       <h1>r/place</h1>
       <div className="grid-container">
         <div className="grid" style={{}} ref={gridRef}>
-          {grid.map((row, rowIndex) => (
-            <div key={rowIndex} className="grid-row">
-              {row.map((color, columnIndex) => (
-                <div
-                  key={columnIndex}
-                  className={`grid-cell ${selectedRow === rowIndex && selectedColumn === columnIndex ? "selected" : ""}`}
-                  style={{
-                    backgroundColor: color,
-                  }}
-                  onClick={() => handleCellClick(rowIndex, columnIndex)}
-                >
-                  {selectedRow === rowIndex &&
-                    selectedColumn === columnIndex && (
-                      <div className="selected-circle" />
-                    )}
-                </div>
-              ))}
-            </div>
-          ))}
+          {gridColors &&
+            Array.from({ length: rowSize }, (_, rowIndex) => (
+              <div key={rowIndex} className="grid-row">
+                {Array.from({ length: columnSize }, (_, columnIndex) => {
+                  const idx = (rowIndex * columnSize + columnIndex) * 4;
+                  const r = gridColors[idx];
+                  const g = gridColors[idx + 1];
+                  const b = gridColors[idx + 2];
+                  const color = `rgb(${r}, ${g}, ${b})`;
+
+                  return (
+                    <div
+                      key={columnIndex}
+                      className={`grid-cell ${
+                        selectedRow === rowIndex &&
+                        selectedColumn === columnIndex
+                          ? "selected"
+                          : ""
+                      }`}
+                      style={{
+                        backgroundColor: color,
+                      }}
+                      onClick={() => handleCellClick(rowIndex, columnIndex)}
+                    >
+                      {selectedRow === rowIndex &&
+                        selectedColumn === columnIndex && (
+                          <div className="selected-circle" />
+                        )}
+                    </div>
+                  );
+                })}
+              </div>
+            ))}
         </div>
         <div className="selection-section">
           {selectedRow !== null && selectedColumn !== null ? (
@@ -140,3 +164,4 @@ async function post(path: string, data: object) {
 async function get(path: string) {
   return await fetch(BACKEND_URL + path).then((res) => res.json());
 }
+

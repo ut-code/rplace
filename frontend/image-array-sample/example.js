@@ -8,7 +8,7 @@ function example() {
 }
 example();
 
-function createRandomArray(width, height) {
+export function createRandomArray(width, height) {
 	const arr = new Uint8ClampedArray(width * height * 4); 
 	for (let h = 0; h < height; h++) {
 		for (let w = 0; w < width; w++) {
@@ -23,7 +23,7 @@ function createRandomArray(width, height) {
 }
 
 // below is also defined in image-array.ts, use one from that file for prod.
-function setImageData(image, arr, width, height) {
+/* function setImageData(image, arr, width, height) {
 
 	const canvas = document.createElement("canvas");
 	canvas.width = width;
@@ -44,4 +44,4 @@ function setImageData(image, arr, width, height) {
 	image.src=dataUri;
 
 	return 0;
-}
+} */

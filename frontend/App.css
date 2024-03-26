@@ -59,3 +59,15 @@
   border: 1px solid black;
 }
 
+.grid-cell {
+  width: 10px;
+  height: 10px;
+  border: 1px solid black;
+}
+
+.selected-circle {
+  width: 10px; /* Adjust the size of the circle */
+  height: 10px; /* Adjust the size of the circle */
+  border-radius: 50%; /* Make it a circle */
+  background-color: red;
+}

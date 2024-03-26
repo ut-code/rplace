@@ -95,17 +95,17 @@ function App() {
               {row.map((color, columnIndex) => (
                 <div
                   key={columnIndex}
-                  className="grid-cell"
+                  className={`grid-cell ${selectedRow === rowIndex && selectedColumn === columnIndex ? "selected" : ""}`}
                   style={{
                     backgroundColor: color,
-                    border: `${
-                      selectedRow === rowIndex && selectedColumn === columnIndex
-                        ? "1px solid red"
-                        : "1px solid black"
-                    }`,
                   }}
                   onClick={() => handleCellClick(rowIndex, columnIndex)}
-                />
+                >
+                  {selectedRow === rowIndex &&
+                    selectedColumn === columnIndex && (
+                      <div className="selected-circle" />
+                    )}
+                </div>
               ))}
             </div>
           ))}
@@ -113,7 +113,9 @@ function App() {
         <div className="selection-section">
           {selectedRow !== null && selectedColumn !== null ? (
             <p>
-              Selected pixel: Row {selectedRow !== null ? selectedRow + 1 : "N/A"}, Column {selectedColumn !== null ? selectedColumn + 1 : "N/A"}
+              Selected pixel: Row{" "}
+              {selectedRow !== null ? selectedRow + 1 : "N/A"}, Column{" "}
+              {selectedColumn !== null ? selectedColumn + 1 : "N/A"}
             </p>
           ) : (
             <p>No pixel selected</p>

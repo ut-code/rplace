@@ -12,8 +12,8 @@ function App() {
   const [selectedColumn, setSelectedColumn] = useState<number | null>(null);
   const gridRef = useRef<HTMLDivElement>(null);
 
-  const rowSize = 50;
-  const columnSize = 100;
+  const rowSize = 10;
+  const columnSize = 10;
   const grid = Array(rowSize).fill(Array(columnSize).fill("#ffffff"));
 
   // backend integration (with Cross-Origin Resource Share) example.

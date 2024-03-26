@@ -16,7 +16,6 @@ function App() {
   const columnSize = 100;
   const grid = Array(rowSize).fill(Array(columnSize).fill("#ffffff"));
 
-
   // backend integration (with Cross-Origin Resource Share) example.
   function fetchCount() {
     get("/count")
@@ -53,19 +52,21 @@ function App() {
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (!selectedRow || !selectedColumn) return;
+      if (selectedRow === null || selectedColumn === null) return;
       switch (event.key) {
         case "ArrowUp":
-          setSelectedRow(prevRow => Math.max(prevRow - 1, 0));
+          setSelectedRow((prevRow) => Math.max(prevRow - 1, 0));
           break;
         case "ArrowDown":
-          setSelectedRow(prevRow => Math.min(prevRow + 1, rowSize - 1));
+          setSelectedRow((prevRow) => Math.min(prevRow + 1, rowSize - 1));
           break;
         case "ArrowLeft":
-          setSelectedColumn(prevColumn => Math.max(prevColumn - 1, 0));
+          setSelectedColumn((prevColumn) => Math.max(prevColumn - 1, 0));
           break;
         case "ArrowRight":
-          setSelectedColumn(prevColumn => Math.min(prevColumn + 1, columnSize - 1));
+          setSelectedColumn((prevColumn) =>
+            Math.min(prevColumn + 1, columnSize - 1)
+          );
           break;
         default:
           break;
@@ -110,10 +111,12 @@ function App() {
           ))}
         </div>
         <div className="selection-section">
-          {selectedRow !== null && selectedColumn !== null && (
+          {selectedRow !== null && selectedColumn !== null ? (
             <p>
-              Selected pixel: Row {selectedRow}, Column {selectedColumn}
+              Selected pixel: Row {selectedRow !== null ? selectedRow + 1 : "N/A"}, Column {selectedColumn !== null ? selectedColumn + 1 : "N/A"}
             </p>
+          ) : (
+            <p>No pixel selected</p>
           )}
         </div>
       </div>

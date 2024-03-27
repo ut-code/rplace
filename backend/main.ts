@@ -9,7 +9,6 @@ use(NODE_ENV, VITE_API_ENDPOINT);
 
 const app = express();
 
-
 app.use(cors({ origin: WEB_ORIGIN }));
 
 app.use(express.json());

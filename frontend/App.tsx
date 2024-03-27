@@ -5,8 +5,7 @@ import { socket } from "./socket.js";
 
 import { VITE_API_ENDPOINT } from "./env";
 import {IntoImage} from "./IntoImage.js";
-import reactLogo from "./assets/react.svg";
-import viteLogo from "/vite.svg";
+import { zoom } from "./zoom.js";
 import "./App.css";
 
 const BACKEND_URL = VITE_API_ENDPOINT;
@@ -50,14 +49,22 @@ function App() {
     };
   }, []);
 
-  const w = 256;
-  const h = 256;
+  const w = 2;
+  const h = 2;
+  const ratio = 100;
+  // const arr = createRandomArray(w, h);
+  const arr = Uint8ClampedArray.from([
+    255, 255, 0, 255,
+    0, 255, 255, 255,
+    255, 0, 255, 255,
+    0, 255, 0, 255,
+  ]);
 
-  const arr = createRandomArray(w, h);
+  const long = zoom(arr, w, h, ratio);
 
   return (
     <>
-      <IntoImage arr={arr} w={w} h={h}></IntoImage>
+      <IntoImage arr={long} w={w * ratio} h={h * ratio}></IntoImage>
       <div className="card">
         {count != null ? (
           <button

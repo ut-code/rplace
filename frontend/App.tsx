@@ -126,11 +126,6 @@ function App() {
   };
 
   const handleCellClick = (rowIndex: number, columnIndex: number) => {
-    if (selectedColor !== null) {
-      const updatedGridColors = [...gridColors];
-      updatedGridColors[rowIndex][columnIndex] = selectedColor;
-      setGridColors(updatedGridColors);
-    }
     setSelectedRow(rowIndex);
     setSelectedColumn(columnIndex);
   };

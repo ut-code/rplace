@@ -1,9 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import { socket } from "./socket.js";
 import { VITE_API_ENDPOINT } from "./env";
-import {IntoImage} from "./IntoImage.js";
-import reactLogo from "./assets/react.svg";
-import viteLogo from "/vite.svg";
 import "./App.css";
 import { setImageData, createRandomArray } from "./image-array-sample/example";
 
@@ -132,6 +129,13 @@ function App() {
     setSelectedRow(rowIndex);
     setSelectedColumn(columnIndex);
   };
+
+  // existed in main
+
+  const w = 256;
+  const h = 256;
+
+  const arr = createRandomArray(w, h);
 
   return (
     <>

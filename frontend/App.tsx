@@ -52,7 +52,6 @@ function App() {
   const gridRef = useRef<HTMLDivElement>(null);
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
 
-
   const rowSize = 16;
   const columnSize = 16;
 
@@ -123,6 +122,7 @@ function App() {
   const colors = ["red", "orange", "yellow", "green", "blue", "purple"];
   const handleColorSelection = (color: string) => {
     setSelectedColor(color);
+    console.log("Selected color:", color);
   };
 
   const handleCellClick = (rowIndex: number, columnIndex: number) => {
@@ -146,7 +146,10 @@ function App() {
                 >
                   {selectedRow === rowIndex &&
                     selectedColumn === columnIndex && (
-                      <div className="selected-box" />
+                      <div
+                        className="selected-box"
+                        style={{ backgroundColor: selectedColor || undefined }}
+                      />
                     )}
                 </div>
               ))}
@@ -169,7 +172,7 @@ function App() {
         {colors.map((color, index) => (
           <div
             key={index}
-            className={`color-box ${selectedColor === color ? 'selected' : ''}`}
+            className={`color-box ${selectedColor === color ? "selected" : ""}`}
             style={{ backgroundColor: color }}
             onClick={() => handleColorSelection(color)}
           />

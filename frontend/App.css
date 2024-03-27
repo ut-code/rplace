@@ -59,8 +59,31 @@
   border: 1px solid black;
 }
 
-.selected-circle {
-  width: 20px; /* Adjust the size of the circle */
-  height: 20px; /* Adjust the size of the circle */
-  background-color: black;
+.selected-box {
+  width: 20px;
+  height: 20px;
+  background-color: #e3e3e3;
+}
+
+.image-container {
+  text-align: center;
+  display: inline-block;
+  transform: scale(50);
+}
+
+.color-selection {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.color-box {
+  width: 20px;
+  height: 20px;
+  margin: 0 5px;
+  cursor: pointer;
+}
+
+.color-box.selected {
+  border: 2px solid #fff; /* Change border style as desired */
 }

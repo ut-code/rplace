@@ -2,7 +2,7 @@ import express from "express";
 import { Server } from "socket.io";
 import cors from "cors";
 
-import { NODE_ENV, WEB_ORIGIN, VITE_API_ENDPOINT} from "./env";
+import { NODE_ENV, WEB_ORIGIN, VITE_API_ENDPOINT} from "./env.js";
 
 const use = (...args: unknown[]) => {args;};
 use(NODE_ENV, VITE_API_ENDPOINT);

@@ -1,13 +1,21 @@
 type errno = number;
-function setImageData(image: HTMLImageElement, arr: Array<number>, width: number, height: number): errno {
+export function setImageData(image: HTMLImageElement, arr: Uint8ClampedArray, width: number, height: number): errno {
 
+	const uri = createImageURI(arr, width, height);
+
+	image.src=uri;
+
+	return 0;
+}
+export function createImageURI(arr: Uint8ClampedArray, width: number, height: number): string {
 	const canvas = document.createElement("canvas");
 	canvas.width = width;
 	canvas.height = height;
 
 	const ctx = canvas.getContext("2d");
-	if (!ctx) return 1;
+	if (!ctx) throw new Error("EXPLICIT ERROR: could not get context out of canvas");
 
+	if (!arr) throw new Error("EXPLICIT ERROR: arr is falsy??")
 	const u8arr = Uint8ClampedArray.from(arr);
 
 	const imageData = ctx.createImageData(width, height);
@@ -15,10 +23,5 @@ function setImageData(image: HTMLImageElement, arr: Array<number>, width: number
 
 	ctx.putImageData(imageData, 0, 0);
 
-	const dataUri = canvas.toDataURL();
-
-	image.src=dataUri;
-
-	return 0;
+	return canvas.toDataURL();
 }
-setImageData; // I'm using it later, stupid eslint

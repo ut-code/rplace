@@ -165,7 +165,7 @@ function App() {
             onClick={() => handleColorSelection(color)}
           />
         ))}
-      </div>
+     </div>
     </>
   );
 }
@@ -198,3 +198,16 @@ function createRandomArray(width: number, height: number) {
     }
     return arr;
   };
+function createRandomArray(width, height) {
+	const arr = new Uint8ClampedArray(width * height * 4); 
+	for (let h = 0; h < height; h++) {
+		for (let w = 0; w < width; w++) {
+			const idx = (h * width + w ) * 4;
+			arr[idx] = w % 256; // Red
+			arr[idx + 1] = h % 256; // Green
+			arr[idx + 2] = idx % 256; // Blue
+			arr[idx + 3] = 255; // Alpha (transparency)
+		}
+	}
+	return arr;
+}

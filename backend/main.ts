@@ -2,9 +2,11 @@ import express from "express";
 import { Server } from "socket.io";
 import cors from "cors";
 
-import { NODE_ENV, WEB_ORIGIN, VITE_API_ENDPOINT} from "./env.js";
+import { NODE_ENV, WEB_ORIGIN, VITE_API_ENDPOINT } from "./env.js";
 
-const use = (...args: unknown[]) => {args;};
+const use = (...args: unknown[]) => {
+  args;
+};
 use(NODE_ENV, VITE_API_ENDPOINT);
 
 const app = express();
@@ -15,10 +17,6 @@ app.use(express.json());
 
 // backend integration examples
 let count = 0;
-app.get("/count", (_, res) => {
-  // send the res after 1 sec (not necessary at all)
-  setTimeout(() => res.send({ count }), 1000);
-});
 app.post("/add", (req, res) => {
   count += req.body.number;
   res.send({ count });
@@ -41,19 +39,101 @@ const io = new Server(httpServer, {
   },
 });
 
-let websocket_count = 0;
-function onAddSocketCount(count: number) {
-  console.log("socket event 'add-socket-count' received.");
-  websocket_count += count;
-  io.sockets.emit("update-socket-count", websocket_count);
+const IMAGE_WIDTH = 16;
+const IMAGE_HEIGHT = 16;
+// const DATA_LEN = IMAGE_HEIGHT * IMAGE_WIDTH * 4;
+
+const data = createRandomArray(IMAGE_WIDTH, IMAGE_HEIGHT);
+
+app.get("/image", (_, res) => {
+  res.send(JSON.stringify(data));
+});
+
+function placePixel(
+  x: number,
+  y: number,
+  color: {
+    r: number;
+    g: number;
+    b: number;
+    a: number;
+  },
+) {
+  // remove these assertions in prod
+  if (x >= IMAGE_WIDTH || y >= IMAGE_HEIGHT)
+    throw new Error(`Invalid x or y found in placePixel().
+    x: ${x}, y: ${y}`);
+  if (
+    color.r < 0 ||
+    color.g < 0 ||
+    color.b < 0 ||
+    color.a < 0 ||
+    color.r > 255 ||
+    color.g > 255 ||
+    color.b > 255 ||
+    color.a > 255
+  ) {
+    throw new Error(`Invalid RGBA value found. rgba: {
+      r: ${color.r}
+      g: ${color.g}
+      b: ${color.b}
+      a: ${color.a}
+    }`);
+  }
+  const first_idx = (IMAGE_WIDTH * y + x) * 4;
+  data[first_idx] = color.r;
+  data[first_idx + 1] = color.g;
+  data[first_idx + 2] = color.b;
+  // maybe A should be always 255? idk
+  data[first_idx + 3] = color.a;
+}
+/*
+namespaces:
+- "/" : global namespace
+
+rooms:
+- "pixel-sync" : used for pixel transmission
+
+events:
+- "connection" : client -> server connection
+- "place-pixel" : client -> server, used to place pixel (contains only one pixel data)
+- "re-render" : server -> client, re-renders the entire canvas (contains all pixels data)
+*/
+
+function onPlacePixel(ev: {
+  x: number;
+  y: number;
+  color: {
+    r: number;
+    g: number;
+    b: number;
+    a: number;
+  };
+}) {
+  console.log("socket event 'place-pixel' received.");
+  console.log(ev);
+  placePixel(ev.x, ev.y, ev.color);
+  // of() is for namespaces, and to() is for rooms
+  io.of("/").to("pixel-sync").emit("re-render", data);
 }
 
 // socket events need to be registered inside here.
 // on connection is one of the few exceptions. (i don't know other exceptions though)
 io.on("connection", (socket) => {
-  socket.on("request-socket-count", () => {
-    console.log("socket event 'request-socket-count' received.");
-    socket.emit("respond-socket-count", websocket_count);
-  });
-  socket.on("add-socket-count", onAddSocketCount);
+  socket.join("pixel-sync");
+  socket.on("place-pixel", onPlacePixel);
 });
+
+function createRandomArray(width: number, height: number) {
+  const arr = new Uint8ClampedArray(width * height * 4);
+  for (let h = 0; h < height; h++) {
+    for (let w = 0; w < width; w++) {
+      const idx = (h * width + w) * 4;
+      arr[idx] = (16 * w) % 256; // Red
+      arr[idx + 1] = (16 * h) % 256; // Green
+      arr[idx + 2] = (16 * idx) % 256; // Blue
+      arr[idx + 3] = 255; // Alpha (transparency)
+    }
+  }
+  return Array.from(arr);
+}

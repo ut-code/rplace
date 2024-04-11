@@ -69,7 +69,7 @@ function App() {
     // TODO!
     console.log("rerender", data.length)
     setImageData(Uint8ClampedArray.from(data));
-    console.log("re-render request was sent!");
+    console.log("re-render request received!");
   }
 
   function handlePlace() {

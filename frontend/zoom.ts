@@ -28,3 +28,51 @@ export function zoom(
   console.assert(ret.length === height * width * ratio ** 2 * 4);
   return ret;
 }
+
+function sample() {
+  return 
+  const w = 2;
+  const h = 2;
+  const ratio = 100;
+  // const arr = createRandomArray(w, h);
+  const arr = Uint8ClampedArray.from([
+    255, 255, 0, 255,
+    0, 255, 255, 255,
+    255, 0, 255, 255,
+    0, 255, 0, 255,
+  ]);
+
+  const long = zoom(arr, w, h, ratio);
+
+  return (
+    <>
+      <IntoImage arr={long} w={w * ratio} h={h * ratio}></IntoImage>
+      <div className="card">
+        {count != null ? (
+          <button
+            onClick={() => {
+              post("/add", { number: 1 }).then((json) => setCount(json.count));
+            }}
+          >
+            count: {count}
+          </button>
+        ) : (
+          <div> loading... </div>
+        )}
+        {socketCount == null ? (
+          <>Loading WebSocket-based count...</>
+        ) : (
+          <button
+            onClick={() => {
+              socket.emit("add-socket-count", 1);
+            }}
+          >
+            WebSocket-based count: {socketCount}
+          </button>
+        )}
+        <p>
+          Edit <code>src/App.tsx</code> and save to test HMR
+        </p>
+    </div>
+  </>
+}

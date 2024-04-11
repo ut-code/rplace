@@ -9,13 +9,8 @@ dotenv.config(
     : undefined,
 );
 
-const 
-    NODE_ENV = process.env.NODE_ENV,
-    WEB_ORIGIN = process.env.WEB_ORIGIN,
-    VITE_API_ENDPOINT = process.env.VITE_API_ENDPOINT;
+const NODE_ENV = process.env.NODE_ENV,
+  WEB_ORIGIN = process.env.WEB_ORIGIN,
+  VITE_API_ENDPOINT = process.env.VITE_API_ENDPOINT;
 
-export {
-    NODE_ENV,
-    WEB_ORIGIN,
-    VITE_API_ENDPOINT,
-}
+export { NODE_ENV, WEB_ORIGIN, VITE_API_ENDPOINT };

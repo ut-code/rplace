@@ -1,10 +1,10 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useMemo } from "react";
 import { socket } from "./socket.js";
 import { VITE_API_ENDPOINT } from "./env";
-import {IntoImage} from "./IntoImage.js";
+import { IntoImage } from "./IntoImage.js";
 import { zoom } from "./zoom.js";
 import "./App.css";
-import {createImageURI} from "./image-array";
+import { createImageURI } from "./image-array";
 
 const BACKEND_URL = VITE_API_ENDPOINT;
 
@@ -33,47 +33,64 @@ function App() {
     setGridColors(colors);
   }, []);
 
-  const [count, setCount] = useState<number | null>(null);
-  const [socketCount, setSocketCount] = useState<number | null>(null);
   const [selectedRow, setSelectedRow] = useState<number | null>(null);
   const [selectedColumn, setSelectedColumn] = useState<number | null>(null);
   const gridRef = useRef<HTMLDivElement>(null);
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
 
-  const rowSize = 16;
-  const columnSize = 16;
+  const IMAGE_HEIGHT = 16;
+  const IMAGE_WIDTH = 16;
+  const IMAGE_DATA_LEN = IMAGE_HEIGHT * IMAGE_WIDTH * 4;
+  const [imageData, setImageData] = useState<number[]>(new Array(IMAGE_DATA_LEN).fill(0));
+
+  // Define a function 'chunk' to split an array into smaller chunks of a specified size
+  // DANGER: NOT WORKING!!!
+  function splitIntoChunks<T>(arr: T[], size: number) {
+    // Use Array.from to create a new array with a length equal to the number of chunks needed
+    return Array.from({length: Math.ceil(arr.length / size)}, (_, i) => {
+        return arr.slice(i * size, i * size + size);
+      }
+    );
+  }
 
   // backend integration (with Cross-Origin Resource Share) example.
-  function fetchCount() {
-    get("/count")
-      .then((json) => json.count)
-      .then(setCount);
+  function fetchImage() {
+    // get() will parse the json inside
+    get("/image")
+      .then(arr => setImageData(Uint8ClampedArray.from(arr)));
   }
-  // useEffect(_, []); will run on each load/reload (careful: without 2nd arg, it would run whenever any existing variable changes)
+  // useEffect(_, []); will run on each load/reload (careful: without second arg, it would run whenever any existing variable changes)
   useEffect(() => {
-    fetchCount();
+    fetchImage();
   }, []);
 
   // Socket.io example.
+  function onReRender(data: number[]) {
+    // TODO!
+    console.log("rerender", data.length)
+    setImageData(Uint8ClampedArray.from(data));
+    console.log("re-render request was sent!");
+  }
+
+  function handlePlace() {
+    const ev = {
+      x: 3, // GET X FROM SOMEWHERE
+      y: 4, // GET Y FROM SOMEWHERE
+      color: {
+        r: 100, // GET Red FROM SOMEWHERE
+        g: 200, // GET Green FROM SOMEWHERE
+        b: 0, // GET Blue FROM SOMEWHERE
+        a: 255,
+      },
+    };
+    socket.emit("place-pixel", ev);
+  }
+
   useEffect(() => {
-    function updateSocketCount(socketBasedCount: number) {
-      setSocketCount(socketBasedCount);
-    }
+    socket.on("re-render", onReRender);
 
-    function onRespondSocketCount(socketBasedCount: number) {
-      console.log("socket event 'respond-socket-count' received.");
-      setSocketCount(socketBasedCount);
-    }
-
-    socket.on("update-socket-count", updateSocketCount);
-    socket.on("respond-socket-count", onRespondSocketCount);
-
-    socket.emit("request-socket-count");
-
-    // destructor: necessary, since events will duplicate without this.
     return () => {
-      socket.off("update-socket-count", updateSocketCount);
-      socket.off("respond-socket-count", onRespondSocketCount);
+      socket.off("re-render", onReRender);
     };
   }, []);
 
@@ -85,14 +102,14 @@ function App() {
           setSelectedRow((prevRow) => Math.max(prevRow - 1, 0));
           break;
         case "ArrowDown":
-          setSelectedRow((prevRow) => Math.min(prevRow + 1, rowSize - 1));
+          setSelectedRow((prevRow) => Math.min(prevRow + 1, IMAGE_HEIGHT - 1));
           break;
         case "ArrowLeft":
           setSelectedColumn((prevColumn) => Math.max(prevColumn - 1, 0));
           break;
         case "ArrowRight":
           setSelectedColumn((prevColumn) =>
-            Math.min(prevColumn + 1, columnSize - 1)
+            Math.min(prevColumn + 1, IMAGE_WIDTH - 1),
           );
           break;
         default:
@@ -121,6 +138,7 @@ function App() {
   return (
     <>
       <h1>r/place</h1>
+      <IntoImage arr={imageData} w={IMAGE_WIDTH} h={IMAGE_HEIGHT} />
       <div className="grid-container">
         <div className="grid" style={{}} ref={gridRef}>
           {gridColors.map((rowColors, rowIndex) => (
@@ -165,7 +183,8 @@ function App() {
             onClick={() => handleColorSelection(color)}
           />
         ))}
-     </div>
+      </div>
+      <button onClick={handlePlace}>Place!!!</button>
     </>
   );
 }
@@ -186,15 +205,19 @@ async function get(path: string) {
 }
 
 function createRandomArray(width: number, height: number) {
-    const arr = new Uint8ClampedArray(width * height * 4);
-    for (let h = 0; h < height; h++) {
-      for (let w = 0; w < width; w++) {
-        const idx = (h * width + w) * 4;
-        arr[idx] = (16 * w) % 256; // Red
-        arr[idx + 1] = (16 * h) % 256; // Green
-        arr[idx + 2] = (16 * idx) % 256; // Blue
-        arr[idx + 3] = 255; // Alpha (transparency)
-      }
+  const arr = new Array(width * height * 4);
+  for (let h = 0; h < height; h++) {
+    for (let w = 0; w < width; w++) {
+      const idx = (h * width + w) * 4;
+      arr[idx] = (16 * w) % 256; // Red
+      arr[idx + 1] = (16 * h) % 256; // Green
+      arr[idx + 2] = (16 * idx) % 256; // Blue
+      arr[idx + 3] = 255; // Alpha (transparency)
     }
-    return arr;
-  };
+  }
+  return arr;
+}
+function inspect<T>(target: T): T {
+  console.log(target);
+  return target;
+}

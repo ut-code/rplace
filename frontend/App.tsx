@@ -7,6 +7,7 @@ import "./App.css";
 import { createImageURI } from "./image-array";
 
 const BACKEND_URL = VITE_API_ENDPOINT;
+const BUTTON_COOLDOWN_SECONDS = 10;
 
 function App() {
   const [imageSrc, setImageSrc] = useState<string | null>(null);
@@ -72,6 +73,11 @@ function App() {
     console.log("re-render request received!");
   }
 
+  const [clickCD, setClickCD] = useState<number>(BUTTON_COOLDOWN_SECONDS);
+  useEffect(() => {
+    setTimeout(() => setClickCD(clickCD - 1), 1000);
+  }, [clickCD]);
+
   function handlePlace() {
     const ev = {
       x: 3, // GET X FROM SOMEWHERE
@@ -84,6 +90,7 @@ function App() {
       },
     };
     socket.emit("place-pixel", ev);
+    setClickCD(BUTTON_COOLDOWN_SECONDS);
   }
 
   useEffect(() => {
@@ -189,7 +196,10 @@ function App() {
           />
         ))}
       </div>
-      <button onClick={handlePlace}>Place!!!</button>
+      {clickCD <= 0
+      ? <button onClick={handlePlace}>Place!!!</button> 
+      : <div>PLEASE WAIT {clickCD} SECONDS BEFOR CLIK</div>
+      }
     </>
   );
 }

@@ -2,6 +2,7 @@
 // height, width are old ones.
 // assumes width, height, ratio are all integer.
 
+import React from "react";
 import { IntoImage } from "./IntoImage";
 
 export function zoom(
@@ -29,4 +30,19 @@ export function zoom(
   }
   console.assert(ret.length === height * width * ratio ** 2 * 4);
   return ret;
+}
+
+export function ZoomedImage({
+  data,
+  w,
+  h,
+  ratio
+}): React.JSX.Element {
+  return <div>
+    <IntoImage
+      arr={zoom(data, w, h, ratio)}
+      w={w*ratio}
+      h={h*ratio}
+    />
+  </div>
 }

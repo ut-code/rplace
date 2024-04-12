@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef, useMemo } from "react";
 import { socket } from "./socket.js";
 import { VITE_API_ENDPOINT } from "./env";
 import { IntoImage } from "./IntoImage.js";
-import { zoom } from "./zoom.js";
+import { ZoomedImage } from "./zoom.tsx";
 import "./App.css";
 import { createImageURI } from "./image-array";
 
@@ -41,23 +41,23 @@ function App() {
   const IMAGE_HEIGHT = 16;
   const IMAGE_WIDTH = 16;
   const IMAGE_DATA_LEN = IMAGE_HEIGHT * IMAGE_WIDTH * 4;
-  const [imageData, setImageData] = useState<number[]>(new Array(IMAGE_DATA_LEN).fill(0));
+  const [imageData, setImageData] = useState<number[]>(
+    new Array(IMAGE_DATA_LEN).fill(0),
+  );
 
   // Define a function 'chunk' to split an array into smaller chunks of a specified size
   // DANGER: NOT WORKING!!!
   function splitIntoChunks<T>(arr: T[], size: number) {
     // Use Array.from to create a new array with a length equal to the number of chunks needed
-    return Array.from({length: Math.ceil(arr.length / size)}, (_, i) => {
-        return arr.slice(i * size, i * size + size);
-      }
-    );
+    return Array.from({ length: Math.ceil(arr.length / size) }, (_, i) => {
+      return arr.slice(i * size, i * size + size);
+    });
   }
 
   // backend integration (with Cross-Origin Resource Share) example.
   function fetchImage() {
     // get() will parse the json inside
-    get("/image")
-      .then(arr => setImageData(Uint8ClampedArray.from(arr)));
+    get("/image").then((arr) => setImageData(Uint8ClampedArray.from(arr)));
   }
   // useEffect(_, []); will run on each load/reload (careful: without second arg, it would run whenever any existing variable changes)
   useEffect(() => {
@@ -67,7 +67,7 @@ function App() {
   // Socket.io example.
   function onReRender(data: number[]) {
     // TODO!
-    console.log("rerender", data.length)
+    console.log("rerender", data.length);
     setImageData(Uint8ClampedArray.from(data));
     console.log("re-render request received!");
   }
@@ -138,7 +138,12 @@ function App() {
   return (
     <>
       <h1>r/place</h1>
-      <IntoImage arr={imageData} w={IMAGE_WIDTH} h={IMAGE_HEIGHT} />
+      <ZoomedImage
+        data={imageData}
+        w={IMAGE_WIDTH}
+        h={IMAGE_HEIGHT}
+        ratio={16}
+      />
       <div className="grid-container">
         <div className="grid" style={{}} ref={gridRef}>
           {gridColors.map((rowColors, rowIndex) => (

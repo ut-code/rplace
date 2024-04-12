@@ -8,6 +8,9 @@ import { createImageURI } from "./image-array";
 
 const BACKEND_URL = VITE_API_ENDPOINT;
 const BUTTON_COOLDOWN_SECONDS = 10;
+const IMAGE_HEIGHT = 16;
+const IMAGE_WIDTH = 16;
+const IMAGE_DATA_LEN = IMAGE_HEIGHT * IMAGE_WIDTH * 4;
 
 function App() {
   const [imageSrc, setImageSrc] = useState<string | null>(null);
@@ -39,9 +42,6 @@ function App() {
   const gridRef = useRef<HTMLDivElement>(null);
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
 
-  const IMAGE_HEIGHT = 16;
-  const IMAGE_WIDTH = 16;
-  const IMAGE_DATA_LEN = IMAGE_HEIGHT * IMAGE_WIDTH * 4;
   const [imageData, setImageData] = useState<number[]>(
     new Array(IMAGE_DATA_LEN).fill(0),
   );
@@ -196,10 +196,11 @@ function App() {
           />
         ))}
       </div>
-      {clickCD <= 0
-      ? <button onClick={handlePlace}>Place!!!</button> 
-      : <div>PLEASE WAIT {clickCD} SECONDS BEFOR CLIK</div>
-      }
+      {clickCD <= 0 ? (
+        <button onClick={handlePlace}>Place!!!</button>
+      ) : (
+        <div>PLEASE WAIT {clickCD} SECONDS BEFOR CLIK</div>
+      )}
     </>
   );
 }

@@ -5,6 +5,7 @@ import { PrismaClient } from "@prisma/client";
 import crypto from "node:crypto";
 import cookie from "cookie";
 import cookieParser from "cookie-parser";
+import { PrismaClient } from "@prisma/client";
 
 import { VITE_BUTTON_COOLDOWN, NODE_ENV, WEB_ORIGIN } from "./env.js";
 
@@ -106,7 +107,11 @@ function placePixel(ev: PlacePixelRequest) {
       .some((b: boolean) => !b)
   ) {
     log(
+<<<<<<< HEAD
       `some value is not integer. r: ${color.r}, g: ${color.g}, b: ${color.b}`,
+=======
+      `some value is not integer. r: ${color.r}, g: ${color.g}, b: ${color.b}, a: ${color.a}`
+>>>>>>> 10ba445 (make storing data possible)
     );
     return;
   }
@@ -134,9 +139,18 @@ async function onPlacePixelRequest(ev: PlacePixelRequest) {
   log(ev);
   placePixel(ev);
   // of() is for namespaces, and to() is for rooms
+<<<<<<< HEAD
   io.of("/").to("pixel-sync").emit("re-render", data);
   await client.pixelColor.update({
     where: { colIndex: ev.x, rowIndex: ev.y },
+=======
+  const newPixelColor = await client.pixelColor.create({
+    data: { data: JSON.stringify(data) },
+  });
+  io.of("/").to("pixel-sync").emit("re-render", newPixelColor.data);
+  await client.pixelColor.update({
+    where: { colIndex: x, rowIndex: y },
+>>>>>>> f945301 (make storing data possible)
     data: { data: JSON.stringify(data.slice(x + 16 * y, x + 16 * y + 2)) },
   });
 }

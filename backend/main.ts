@@ -1,6 +1,7 @@
 import express from "express";
 import { Server } from "socket.io";
 import cors from "cors";
+import { PrismaClient } from "@prisma/client";
 
 import { NODE_ENV, WEB_ORIGIN, VITE_API_ENDPOINT } from "./env.js";
 
@@ -44,6 +45,7 @@ const IMAGE_HEIGHT = 16;
 // const DATA_LEN = IMAGE_HEIGHT * IMAGE_WIDTH * 4;
 
 const data = createRandomArray(IMAGE_WIDTH, IMAGE_HEIGHT);
+const client = new PrismaClient();
 
 app.get("/image", (_, res) => {
   res.send(JSON.stringify(data));
@@ -57,7 +59,7 @@ function placePixel(
     g: number;
     b: number;
     a: number;
-  },
+  }
 ) {
   // remove these assertions in prod
   if (x >= IMAGE_WIDTH || y >= IMAGE_HEIGHT)
@@ -100,7 +102,7 @@ events:
 - "re-render" : server -> client, re-renders the entire canvas (contains all pixels data)
 */
 
-function onPlacePixel(ev: {
+async function onDecidingPixelColor(ev: {
   x: number;
   y: number;
   color: {
@@ -114,14 +116,17 @@ function onPlacePixel(ev: {
   console.log(ev);
   placePixel(ev.x, ev.y, ev.color);
   // of() is for namespaces, and to() is for rooms
-  io.of("/").to("pixel-sync").emit("re-render", data);
+  const newPixelColor = await client.pixelColor.create({
+    data: { data: JSON.stringify(data) },
+  });
+  io.of("/").to("pixel-sync").emit("re-render", newPixelColor.data);
 }
 
 // socket events need to be registered inside here.
 // on connection is one of the few exceptions. (i don't know other exceptions though)
 io.on("connection", (socket) => {
   socket.join("pixel-sync");
-  socket.on("place-pixel", onPlacePixel);
+  socket.on("place-pixel", onDecidingPixelColor);
 });
 
 function createRandomArray(width: number, height: number) {

@@ -9,7 +9,7 @@ export function zoom(
   arr: Uint8ClampedArray,
   width: number,
   height: number,
-  ratio: number
+  ratio: number,
 ): Uint8ClampedArray {
   console.assert(arr.length === width * height * 4);
   const len = width * height;
@@ -32,17 +32,10 @@ export function zoom(
   return ret;
 }
 
-export function ZoomedImage({
-  data,
-  w,
-  h,
-  ratio
-}): React.JSX.Element {
-  return <div>
-    <IntoImage
-      arr={zoom(data, w, h, ratio)}
-      w={w*ratio}
-      h={h*ratio}
-    />
-  </div>
+export function ZoomedImage({ data, w, h, ratio }): React.JSX.Element {
+  return (
+    <div>
+      <IntoImage arr={zoom(data, w, h, ratio)} w={w * ratio} h={h * ratio} />
+    </div>
+  );
 }

@@ -46,15 +46,6 @@ function App() {
     new Array(IMAGE_DATA_LEN).fill(0),
   );
 
-  // Define a function 'chunk' to split an array into smaller chunks of a specified size
-  // DANGER: NOT WORKING!!!
-  function splitIntoChunks<T>(arr: T[], size: number) {
-    // Use Array.from to create a new array with a length equal to the number of chunks needed
-    return Array.from({ length: Math.ceil(arr.length / size) }, (_, i) => {
-      return arr.slice(i * size, i * size + size);
-    });
-  }
-
   // backend integration (with Cross-Origin Resource Share) example.
   function fetchImage() {
     // get() will parse the json inside

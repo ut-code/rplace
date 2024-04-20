@@ -41,24 +41,6 @@ in two separate process
 
 releasing will be automatically done after updating branch `release`. make sure main is working before merging to release.
 
-## how to run (production mode)
-
-```shell for frontend
-npm run frontend:build
-echo "frontend build is done. now use static file hosting service to serve `./vite-dist`."
-```
-
-```shell for backend
-npm run backend:build
-npm run backend:serve:release
-```
-
-things that change on release mode:
-
-- environment variables (WEB_ORIGIN and VITE_API_ENDPOINT)
-  - dotenv uses .env.production instead of .env
-- vite is built into static files (it's hot-reloaded in dev mode)
-
 ## Generated files
 
 do NOT touch files inside these 3 directories. they will be overwritten.

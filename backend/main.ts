@@ -15,12 +15,7 @@ app.use(cors({ origin: WEB_ORIGIN }));
 
 app.use(express.json());
 
-// backend integration examples
-let count = 0;
-app.post("/add", (req, res) => {
-  count += req.body.number;
-  res.send({ count });
-});
+
 
 /* * * * * * */
 

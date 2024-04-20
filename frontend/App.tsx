@@ -75,7 +75,8 @@ function App() {
 
   const [clickCD, setClickCD] = useState<number>(BUTTON_COOLDOWN_SECONDS);
   useEffect(() => {
-    setTimeout(() => setClickCD(clickCD - 1), 1000);
+    const id = setTimeout(() => setClickCD(clickCD - 1), 1000);
+    return () => clearTimeout(id);
   }, [clickCD]);
 
   function handlePlace() {

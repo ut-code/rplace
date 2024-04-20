@@ -37,6 +37,10 @@ npm run backend:dev
 
 in two separate process
 
+# Releasing
+
+releasing will be automatically done after updating branch `release`. make sure main is working before merging to release.
+
 ## how to run (production mode)
 
 ```shell for frontend

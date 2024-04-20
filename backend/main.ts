@@ -15,7 +15,7 @@ if (doLogging) {
 }
 
 const log = doLogging
-  ? (...x) => {
+  ? (...x: any[]) => {
       console.log(...x);
     }
   : () => {};

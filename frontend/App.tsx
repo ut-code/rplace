@@ -7,7 +7,7 @@ import "./App.css";
 import { createImageURI } from "./image-array";
 
 const BACKEND_URL = VITE_API_ENDPOINT;
-const BUTTON_COOLDOWN_SECONDS = 0; // run BUTTON_COOLDOWN_SECONDS=0 npm run serve for zero-cd button presses
+const BUTTON_COOLDOWN_SECONDS = 0;
 const IMAGE_HEIGHT = 16;
 const IMAGE_WIDTH = 16;
 const IMAGE_DATA_LEN = IMAGE_HEIGHT * IMAGE_WIDTH * 4;

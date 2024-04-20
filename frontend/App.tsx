@@ -218,7 +218,10 @@ async function post(path: string, data: object) {
 }
 
 async function get(path: string) {
-  return await fetch(BACKEND_URL + path).then((res) => res.json());
+  if (BACKEND_URL) {
+    return await fetch(BACKEND_URL + path).then((res) => res.json());
+  }
+  return fetch(path).then((res) => res.json());
 }
 
 function createRandomArray(width: number, height: number) {

@@ -15,7 +15,7 @@ app.use(cors({ origin: WEB_ORIGIN }));
 
 app.use(express.json());
 
-
+app.use(express.static("./vite-dist"))
 
 /* * * * * * */
 

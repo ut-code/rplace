@@ -9,6 +9,15 @@ const use = (...args: unknown[]) => {
 };
 use(NODE_ENV, VITE_API_ENDPOINT);
 
+const doLogging = NODE_ENV === "development";
+if (doLogging) {
+  console.log("do logging: true");
+}
+
+const log = doLogging ? (...x) => {
+  console.log(...x);
+} : () => {};
+
 const app = express();
 
 app.use(cors({ origin: WEB_ORIGIN }));
@@ -105,8 +114,8 @@ function onPlacePixel(ev: {
     a: number;
   };
 }) {
-  console.log("socket event 'place-pixel' received.");
-  console.log(ev);
+  log("socket event 'place-pixel' received.");
+  log(ev);
   placePixel(ev.x, ev.y, ev.color);
   // of() is for namespaces, and to() is for rooms
   io.of("/").to("pixel-sync").emit("re-render", data);

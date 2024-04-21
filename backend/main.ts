@@ -67,8 +67,9 @@ function placePixel(
 ) {
   // remove these assertions in prod
   if (x >= IMAGE_WIDTH || y >= IMAGE_HEIGHT)
-    throw new Error(`Invalid x or y found in placePixel().
+    log(`Invalid x or y found in placePixel().
     x: ${x}, y: ${y}`);
+  return;
   if (
     color.r < 0 ||
     color.g < 0 ||
@@ -79,12 +80,13 @@ function placePixel(
     color.b > 255 ||
     color.a > 255
   ) {
-    throw new Error(`Invalid RGBA value found. rgba: {
+    log(`Invalid RGBA value found. rgba: {
       r: ${color.r}
       g: ${color.g}
       b: ${color.b}
       a: ${color.a}
     }`);
+  return;
   }
   const first_idx = (IMAGE_WIDTH * y + x) * 4;
   data[first_idx] = color.r;

@@ -66,7 +66,7 @@ function placePixel(
   },
 ) {
   // remove these assertions in prod
-  if (x >= IMAGE_WIDTH || y >= IMAGE_HEIGHT)
+  if (x >= IMAGE_WIDTH || y >= IMAGE_HEIGHT || x < 0 || y < 0)
     throw new Error(`Invalid x or y found in placePixel().
     x: ${x}, y: ${y}`);
   if (

@@ -65,7 +65,7 @@ function placePixel(
     a: number;
   },
 ) {
-  if (x >= IMAGE_WIDTH || y >= IMAGE_HEIGHT || x < 0 || y < 0 || !Number.isInteger(x) || !Number.isInteger(y))
+  if (x >= IMAGE_WIDTH || y >= IMAGE_HEIGHT || x < 0 || y < 0 || !Number.isInteger(x) || !Number.isInteger(y)) {
     log(`Invalid x or y found in placePixel(). x: ${x}, y: ${y}`);
     return;
   }

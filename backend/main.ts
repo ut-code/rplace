@@ -45,8 +45,8 @@ const io = new Server(httpServer, {
   },
 });
 
-const IMAGE_WIDTH = 16;
-const IMAGE_HEIGHT = 16;
+const IMAGE_WIDTH = 512;
+const IMAGE_HEIGHT = 512;
 // const DATA_LEN = IMAGE_HEIGHT * IMAGE_WIDTH * 4;
 
 const data = createRandomArray(IMAGE_WIDTH, IMAGE_HEIGHT);

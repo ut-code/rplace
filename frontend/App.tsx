@@ -8,7 +8,7 @@ import { createImageURI } from "./image-array";
 
 const BACKEND_URL = VITE_API_ENDPOINT;
 const BUTTON_COOLDOWN_PROD = 10; // this fallback is used in release, because on render build command cannot access environment variables
-const BUTTON_COOLDOWN_SECONDS = import.meta?.env?.VITE_BUTTON_COOLDOWN || BUTTON_COOLDOWN_PROD; 
+const BUTTON_COOLDOWN_SECONDS = import.meta?.env?.VITE_BUTTON_COOLDOWN ?? BUTTON_COOLDOWN_PROD; 
 const IMAGE_HEIGHT = 512;
 const IMAGE_WIDTH = 512;
 const IMAGE_DATA_LEN = IMAGE_HEIGHT * IMAGE_WIDTH * 4;

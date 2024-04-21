@@ -30,7 +30,7 @@ app.use(express.static("./vite-dist"));
 
 /* * * * * * */
 
-const PORT = 3200;
+const PORT = process.env.PORT || 3200;
 const httpServer = app.listen(PORT, () => {
   console.log(`|backend| Listening on ${PORT}...`);
 });

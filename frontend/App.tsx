@@ -7,53 +7,51 @@ import "./App.css";
 import { createImageURI } from "./image-array";
 
 const BACKEND_URL = VITE_API_ENDPOINT;
-const BUTTON_COOLDOWN_SECONDS = 10;
+const BUTTON_COOLDOWN_SECONDS = 0;
 const IMAGE_HEIGHT = 16;
 const IMAGE_WIDTH = 16;
 const IMAGE_DATA_LEN = IMAGE_HEIGHT * IMAGE_WIDTH * 4;
 
+type Color = number[];
+const colors: Color[] = [
+  [255, 255, 255], // white
+  [0, 255, 255],
+  [0, 0, 255],
+  [255, 0, 255],
+  [255, 0, 0],
+  [255, 255, 0],
+  [0, 255, 0],
+  [0, 0, 0], // black
+];
+
 function App() {
   const [imageSrc, setImageSrc] = useState<string | null>(null);
   const [gridColors, setGridColors] = useState<string[][]>([]);
+  const [imageData, setImageData] = useState<number[]>(
+    () => new Array(IMAGE_DATA_LEN).fill(0),
+  );
   useEffect(() => {
     // Call setImageData to generate the image data
-    const width = 16,
-      height = 16;
-    const arr = createRandomArray(width, height);
-    const imageDataSrc = createImageURI(arr, width, height);
-    setImageSrc(imageDataSrc);
 
     // Extract colors from the generated image data and update grid colors
     const colors: string[][] = [];
-    for (let i = 0; i < height; i++) {
+    for (let i = 0; i < IMAGE_HEIGHT; i++) {
       const rowColors: string[] = [];
-      for (let j = 0; j < width; j++) {
-        const idx = (i * width + j) * 4;
-        const color = `rgba(${arr[idx]}, ${arr[idx + 1]}, ${arr[idx + 2]}, ${arr[idx + 3]})`;
+      for (let j = 0; j < IMAGE_WIDTH; j++) {
+        const idx = (IMAGE_WIDTH * i + j) * 4;
+        const arr = imageData.slice(idx, idx + 4);
+        const color = `rgba(${arr[0]}, ${arr[1]}, ${arr[2]}, ${arr[3]})`;
         rowColors.push(color);
       }
       colors.push(rowColors);
     }
     setGridColors(colors);
-  }, []);
+  }, [imageData]);
 
   const [selectedRow, setSelectedRow] = useState<number | null>(null);
   const [selectedColumn, setSelectedColumn] = useState<number | null>(null);
   const gridRef = useRef<HTMLDivElement>(null);
-  const [selectedColor, setSelectedColor] = useState<string | null>(null);
-
-  const [imageData, setImageData] = useState<number[]>(
-    new Array(IMAGE_DATA_LEN).fill(0),
-  );
-
-  // Define a function 'chunk' to split an array into smaller chunks of a specified size
-  // DANGER: NOT WORKING!!!
-  function splitIntoChunks<T>(arr: T[], size: number) {
-    // Use Array.from to create a new array with a length equal to the number of chunks needed
-    return Array.from({ length: Math.ceil(arr.length / size) }, (_, i) => {
-      return arr.slice(i * size, i * size + size);
-    });
-  }
+  const [selectedColor, setSelectedColor] = useState<Color>([255, 255, 255]);
 
   // backend integration (with Cross-Origin Resource Share) example.
   function fetchImage() {
@@ -81,12 +79,12 @@ function App() {
 
   function handlePlace() {
     const ev = {
-      x: 3, // GET X FROM SOMEWHERE
-      y: 4, // GET Y FROM SOMEWHERE
+      x: selectedColumn,
+      y: selectedRow,
       color: {
-        r: 100, // GET Red FROM SOMEWHERE
-        g: 200, // GET Green FROM SOMEWHERE
-        b: 0, // GET Blue FROM SOMEWHERE
+        r: selectedColor[0],
+        g: selectedColor[1],
+        b: selectedColor[2],
         a: 255,
       },
     };
@@ -132,7 +130,6 @@ function App() {
     };
   }, [selectedRow, selectedColumn]);
 
-  const colors = ["red", "orange", "yellow", "green", "blue", "purple"];
   const handleColorSelection = (color: string) => {
     setSelectedColor(color);
     console.log("Selected color:", color);
@@ -167,7 +164,7 @@ function App() {
                     selectedColumn === columnIndex && (
                       <div
                         className="selected-box"
-                        style={{ backgroundColor: selectedColor || undefined }}
+                        style={{ backgroundColor: rgb(selectedColor) || undefined }}
                       />
                     )}
                 </div>
@@ -192,7 +189,7 @@ function App() {
           <div
             key={index}
             className={`color-box ${selectedColor === color ? "selected" : ""}`}
-            style={{ backgroundColor: color }}
+            style={{ backgroundColor: rgb(color) }}
             onClick={() => handleColorSelection(color)}
           />
         ))}
@@ -207,6 +204,18 @@ function App() {
 }
 
 export default App;
+
+function rgb(color: Color): string {
+  return (
+    "#" + twoDigitHex(color[0]) + twoDigitHex(color[1]) + twoDigitHex(color[2])
+  );
+}
+function twoDigitHex(n: number): string {
+  return hex(n).padStart(2, "0");
+}
+function hex(n: number): string {
+  return n.toString(16); // wtf
+}
 
 /// sends data in POST request using fetch API
 async function post(path: string, data: object) {

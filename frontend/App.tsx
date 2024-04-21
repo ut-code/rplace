@@ -90,7 +90,7 @@ function App() {
         a: 255,
       },
     };
-    socket.emit("place-pixel", ev);
+    put("/place-pixel", ev);
     setClickCD(BUTTON_COOLDOWN_SECONDS);
   }
 
@@ -235,6 +235,15 @@ async function get(path: string) {
     return await fetch(BACKEND_URL + path).then((res) => res.json());
   }
   return fetch(path).then((res) => res.json());
+}
+
+// PUT doesn't return anything.
+function put<T>(path: string, data: T) {
+  fetch(BACKEND_URL + path, {
+    method: "put",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
 }
 
 function createRandomArray(width: number, height: number) {

@@ -129,8 +129,7 @@ events:
 - "place-pixel" : client -> server, used to place pixel (contains only one pixel data)
 - "re-render" : server -> client, re-renders the entire canvas (contains all pixels data)
 */
-
-function onPlacePixel(ev: {
+type Ev = {
   x: number;
   y: number;
   color: {
@@ -139,7 +138,8 @@ function onPlacePixel(ev: {
     b: number;
     a: number;
   };
-}) {
+};
+function onPlacePixel(ev: Ev) {
   log("socket event 'place-pixel' received.");
   log(ev);
   placePixel(ev.x, ev.y, ev.color);
@@ -171,13 +171,25 @@ idTimerMap;
 // on connection is one of the few exceptions. (i don't know other exceptions though)
 io.on("connection", (socket) => {
   socket.join("pixel-sync");
-  socket.on("place-pixel", onPlacePixel);
 
   // create crypto-safe random value (correct me if I'm wrong)
   crypto.randomBytes(32, (err, buf) => { // 32 bytes = 256 bits = 2 ^ 256 possibilities
     if (err) throw new Error("node:crypto.randomBytes has failed. I have no idea what happened. Here's the error anyways: " + err.toString());
     buf; // TODO!
-  })
+  });
+});
+
+app.put("/place-pixel", (req, res) => {
+  let intermediate_buffer_dont_mind_me: Ev | null = null;
+  try {
+    intermediate_buffer_dont_mind_me = req.body as Ev; // this fails for some reason?
+  } catch (e) {
+    res.status(400).send("Invalid request.");
+    return;
+  }
+  const ev = intermediate_buffer_dont_mind_me;
+  onPlacePixel(ev);
+  res.status(202).send("ok"); // since websocket will do the actual work, we just send status 202: Accepted
 });
 
 function createRandomArray(width: number, height: number) {

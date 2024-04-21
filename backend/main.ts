@@ -45,8 +45,13 @@ const io = new Server(httpServer, {
   },
 });
 
+<<<<<<< HEAD
 const IMAGE_WIDTH = 16;
 const IMAGE_HEIGHT = 16;
+=======
+const IMAGE_WIDTH = 64;
+const IMAGE_HEIGHT = 64;
+>>>>>>> release
 // const DATA_LEN = IMAGE_HEIGHT * IMAGE_WIDTH * 4;
 
 const data = createRandomArray(IMAGE_WIDTH, IMAGE_HEIGHT);
@@ -65,11 +70,9 @@ function placePixel(
     a: number;
   },
 ) {
-  // remove these assertions in prod
-  if (x >= IMAGE_WIDTH || y >= IMAGE_HEIGHT) {
-    log(`Invalid x or y found in placePixel().
-    x: ${x}, y: ${y}`);
-  return;
+  if (x >= IMAGE_WIDTH || y >= IMAGE_HEIGHT || x < 0 || y < 0 || !Number.isInteger(x) || !Number.isInteger(y))
+    log(`Invalid x or y found in placePixel(). x: ${x}, y: ${y}`);
+    return;
   }
   if (
     color.r < 0 ||
@@ -89,8 +92,8 @@ function placePixel(
     }`);
   return;
   }
-  if ([color.r, color.g, color.b, color.a, x, y].map(n => Number.isInteger(n)).some((b: boolean) => !b)) {
-    log(`some value is not integer. r: ${color.r}, g: ${color.g}, b: ${color.b}, a: ${color.a}, x: ${x}, y: {y}`);
+  if ([color.r, color.g, color.b, color.a].map(n => Number.isInteger(n)).some((b: boolean) => !b)) {
+    log(`some value is not integer. r: ${color.r}, g: ${color.g}, b: ${color.b}, a: ${color.a}`);
     return;
   }
   const first_idx = (IMAGE_WIDTH * y + x) * 4;

@@ -1,6 +1,7 @@
 import express from "express";
 import { Server } from "socket.io";
 import cors from "cors";
+import crypto from "node:crypto";
 
 import { NODE_ENV, WEB_ORIGIN, VITE_API_ENDPOINT } from "./env.js";
 
@@ -22,7 +23,9 @@ const log = doLogging
 
 const app = express();
 
-app.use(cors({ origin: WEB_ORIGIN }));
+if (WEB_ORIGIN) {
+  app.use(cors({ origin: WEB_ORIGIN }));
+}
 
 app.use(express.json());
 
@@ -41,10 +44,13 @@ const httpServer = app.listen(PORT, () => {
 // read https://socket.io/docs/v4/server-api/
 const io = new Server(httpServer, {
   cors: {
-    origin: process.env.WEB_ORIGIN!,
+    origin: WEB_ORIGIN!,
   },
+  cookie: true,
 });
 
+const BUTTON_COOLDOWN_SECONDS = 10;
+BUTTON_COOLDOWN_SECONDS;
 const IMAGE_WIDTH = 16;
 const IMAGE_HEIGHT = 16;
 // const DATA_LEN = IMAGE_HEIGHT * IMAGE_WIDTH * 4;
@@ -65,7 +71,14 @@ function placePixel(
     a: number;
   },
 ) {
-  if (x >= IMAGE_WIDTH || y >= IMAGE_HEIGHT || x < 0 || y < 0 || !Number.isInteger(x) || !Number.isInteger(y)) {
+  if (
+    x >= IMAGE_WIDTH ||
+    y >= IMAGE_HEIGHT ||
+    x < 0 ||
+    y < 0 ||
+    !Number.isInteger(x) ||
+    !Number.isInteger(y)
+  ) {
     log(`Invalid x or y found in placePixel(). x: ${x}, y: ${y}`);
     return;
   }
@@ -85,10 +98,16 @@ function placePixel(
       b: ${color.b}
       a: ${color.a}
     }`);
-  return;
+    return;
   }
-  if ([color.r, color.g, color.b, color.a].map(n => Number.isInteger(n)).some((b: boolean) => !b)) {
-    log(`some value is not integer. r: ${color.r}, g: ${color.g}, b: ${color.b}, a: ${color.a}`);
+  if (
+    [color.r, color.g, color.b, color.a]
+      .map((n) => Number.isInteger(n))
+      .some((b: boolean) => !b)
+  ) {
+    log(
+      `some value is not integer. r: ${color.r}, g: ${color.g}, b: ${color.b}, a: ${color.a}`,
+    );
     return;
   }
   const first_idx = (IMAGE_WIDTH * y + x) * 4;
@@ -128,11 +147,37 @@ function onPlacePixel(ev: {
   io.of("/").to("pixel-sync").emit("re-render", data);
 }
 
+
+/* request validation.
+0. prepare: a map (I'm calling it `idTimerMap` from now on)
+1. store keys that should be one-to-one to clients. (I'm calling this `client id` from now on)
+  (one-to-one means that clients should not share the same key, and a client's device should not have more than two keys (if this functionality is possible))
+2. on connection, create an entry (k-v pair) in idTimerMap with client id as key and current time as value.
+  - don't forget to defer deleting on disconnection
+3. on place-pixel request, consider the request valid if:
+  a. there is an entry that matches the id of the client, and
+  b. current time - (the entry's value) >= $BUTTON_COOLDOWN_SECONDS * 1000 - (some possible clock delay like 100ms idk)
+
+yes, it's possible to attack this via cli socket.io client + concurrent processes. 
+so I might add a recaptcha later.
+*/
+
+type Id = string;
+const idTimerMap = new Map<Id, Date>();
+// i'm reading the value later, stupid tsc
+idTimerMap;
+
 // socket events need to be registered inside here.
 // on connection is one of the few exceptions. (i don't know other exceptions though)
 io.on("connection", (socket) => {
   socket.join("pixel-sync");
   socket.on("place-pixel", onPlacePixel);
+
+  // create crypto-safe random value (correct me if I'm wrong)
+  crypto.randomBytes(32, (err, buf) => { // 32 bytes = 256 bits = 2 ^ 256 possibilities
+    if (err) throw new Error("node:crypto.randomBytes has failed. I have no idea what happened. Here's the error anyways: " + err.toString());
+    buf; // TODO!
+  })
 });
 
 function createRandomArray(width: number, height: number) {

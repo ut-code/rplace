@@ -8,7 +8,8 @@ import { createImageURI } from "./image-array";
 
 const BACKEND_URL = VITE_API_ENDPOINT;
 const BUTTON_COOLDOWN_PROD = 10; // this fallback is used in release, because on render build command cannot access environment variables
-const BUTTON_COOLDOWN_SECONDS = import.meta?.env?.VITE_BUTTON_COOLDOWN ?? BUTTON_COOLDOWN_PROD; 
+const BUTTON_COOLDOWN_SECONDS =
+  import.meta?.env?.VITE_BUTTON_COOLDOWN ?? BUTTON_COOLDOWN_PROD;
 const IMAGE_HEIGHT = 16;
 const IMAGE_WIDTH = 16;
 const IMAGE_DATA_LEN = IMAGE_HEIGHT * IMAGE_WIDTH * 4;
@@ -28,8 +29,8 @@ const colors: Color[] = [
 function App() {
   const [imageSrc, setImageSrc] = useState<string | null>(null);
   const [gridColors, setGridColors] = useState<string[][]>([]);
-  const [imageData, setImageData] = useState<number[]>(
-    () => new Array(IMAGE_DATA_LEN).fill(0),
+  const [imageData, setImageData] = useState<number[]>(() =>
+    new Array(IMAGE_DATA_LEN).fill(0),
   );
   useEffect(() => {
     // Call setImageData to generate the image data
@@ -165,7 +166,9 @@ function App() {
                     selectedColumn === columnIndex && (
                       <div
                         className="selected-box"
-                        style={{ backgroundColor: rgb(selectedColor) || undefined }}
+                        style={{
+                          backgroundColor: rgb(selectedColor) || undefined,
+                        }}
                       />
                     )}
                 </div>

@@ -45,8 +45,8 @@ const io = new Server(httpServer, {
   },
 });
 
-const IMAGE_WIDTH = 512;
-const IMAGE_HEIGHT = 512;
+const IMAGE_WIDTH = 64;
+const IMAGE_HEIGHT = 64;
 // const DATA_LEN = IMAGE_HEIGHT * IMAGE_WIDTH * 4;
 
 const data = createRandomArray(IMAGE_WIDTH, IMAGE_HEIGHT);
@@ -66,7 +66,7 @@ function placePixel(
   },
 ) {
   // remove these assertions in prod
-  if (x >= IMAGE_WIDTH || y >= IMAGE_HEIGHT)
+  if (x >= IMAGE_WIDTH || y >= IMAGE_HEIGHT || x < 0 || y < 0 || !Number.isInteger(x) || !Number.isInteger(y))
     throw new Error(`Invalid x or y found in placePixel().
     x: ${x}, y: ${y}`);
   if (

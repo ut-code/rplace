@@ -89,7 +89,7 @@ function placePixel(
     }`);
   return;
   }
-  if ([color.r, color.g, color.b, color.a, x, y].map(n => Number.isInteger(n)).any(b => !b)) {
+  if ([color.r, color.g, color.b, color.a, x, y].map(n => Number.isInteger(n)).some((b: boolean) => !b)) {
     log(`some value is not integer. r: ${color.r}, g: ${color.g}, b: ${color.b}, a: ${color.a}, x: ${x}, y: {y}`);
     return;
   }

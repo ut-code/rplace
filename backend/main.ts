@@ -18,9 +18,9 @@ if (doLogging) {
 
 const log = doLogging
   ? (...x: any[]) => {
-      console.log(...x);
-    }
-  : () => {};
+    console.log(...x);
+  }
+  : () => { };
 
 const app = express();
 
@@ -175,12 +175,13 @@ io.on("connection", (socket) => {
 // since io.on("connection") cannot give cookies, we need to use io.engine.on("initial_headers"). think this as the same as io.on("connection") with some lower level control
 // read https://socket.io/how-to/deal-with-cookies for more
 io.engine.on("initial_headers", (headers, request) => {
-  console.log(request.headers.cookie);
-  const cookies = cookie.parse(request.headers.cookie);
-  const id = cookies["device-id"];
-  if (id && idLastWrittenMap.has(id)) {
-    // this device already has a cookie and the server recognizes the cookie
-    return;
+  const cookies = request.headers.cookie && cookie.parse(request.headers.cookie);
+  if (cookies) {
+    const id = cookies["device-id"];
+    if (id && idLastWrittenMap.has(id)) {
+      // this device already has a cookie and the server recognizes the cookie
+      return;
+    }
   }
 
   // create crypto-safe random value (correct me if I'm wrong)

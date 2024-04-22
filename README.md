@@ -1,14 +1,5 @@
 # MAYFEST/RPLACE
 
-## IMPORTANT
-
-this is only intended to be run on Linux (including WSL).
-
-it sometimes does not seem to connect to backend due to "CORS Request Blocked."
-this is probably because VS Code Terminal opened 127.0.0.1 when it's supposed to open localhost, making the cors package think the origin is not allowed.
-
-solution: open `http://localhost:5173` manually.
-
 ## how to setup
 
 ```shell
@@ -48,10 +39,17 @@ do NOT touch files inside these 3 directories. they will be overwritten.
 ./tsc-dist/
 ./vite-dist/
 
-## Hot Reload
+## how it runs
 
-Vite (frontend) ... supports hot reload.
-tsc + express (backend) ... does NOT support hot reload. reload manually.
+during build process,
+
+- backend ts files will be transpiled to js files and will be put in ./tsc-dist/
+- (if release mode, ) frontend JSX will be transpiled to pure JS and will be put in ./vite-dist/
+
+and to provide,
+
+- (dev mode) Node.js runs ./tsc-dist/main.js and Vite directly runs frontend directory. there is duplicate static server in ./tsc-dist/main.js that also serves frontend files, but it's ok because it's dev mode anyways
+- (release mode) Node.js runs ./tsc-dist/main.js. this also statically serves files in ./vite-dist/
 
 ## TODO
 

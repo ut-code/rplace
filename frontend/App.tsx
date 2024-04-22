@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import { socket } from "./socket.js";
 import { VITE_API_ENDPOINT } from "./env";
-import { ZoomedImage } from "./zoom.tsx";
+import { UpscaledImage } from "./zoom.tsx";
 import "./App.css";
 
 const BACKEND_URL = VITE_API_ENDPOINT;
@@ -142,7 +142,7 @@ function App() {
   return (
     <>
       <h1>r/place</h1>
-      <ZoomedImage
+      <UpscaledImage
         data={imageData}
         w={IMAGE_WIDTH}
         h={IMAGE_HEIGHT}

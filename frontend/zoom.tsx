@@ -4,7 +4,7 @@
 
 import React from "react";
 import { IntoImage } from "./IntoImage";
-import { upscale } from "./upscale"; 
+import { upscale } from "./upscale";
 
 export function UpscaledImage({ data, w, h, ratio }): React.JSX.Element {
   return (

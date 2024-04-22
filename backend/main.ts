@@ -2,6 +2,7 @@ import express from "express";
 import { Server } from "socket.io";
 import cors from "cors";
 import crypto from "node:crypto";
+import cookie from "cookie";
 
 import { NODE_ENV, WEB_ORIGIN, VITE_API_ENDPOINT } from "./env.js";
 
@@ -147,12 +148,11 @@ function onPlacePixel(ev: Ev) {
   io.of("/").to("pixel-sync").emit("re-render", data);
 }
 
-
 /* request validation.
-0. prepare: a map (I'm calling it `idTimerMap` from now on)
+0. prepare: a map (I'm calling it `idLastWrittenMap` from now on)
 1. store keys that should be one-to-one to clients. (I'm calling this `client id` from now on)
   (one-to-one means that clients should not share the same key, and a client's device should not have more than two keys (if this functionality is possible))
-2. on connection, create an entry (k-v pair) in idTimerMap with client id as key and current time as value.
+2. on connection, create an entry (k-v pair) in idLastWrittenMap with client id as key and current time as value.
   - don't forget to defer deleting on disconnection
 3. on place-pixel request, consider the request valid if:
   a. there is an entry that matches the id of the client, and
@@ -163,26 +163,72 @@ so I might add a recaptcha later.
 */
 
 type Id = string;
-const idTimerMap = new Map<Id, Date>();
-// i'm reading the value later, stupid tsc
-idTimerMap;
+const idLastWrittenMap = new Map<Id, number>();
+// this is precision-safe until September 13, 275760 AD. refer https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/Date
 
 // socket events need to be registered inside here.
 // on connection is one of the few exceptions. (i don't know other exceptions though)
 io.on("connection", (socket) => {
   socket.join("pixel-sync");
+});
+
+// since io.on("connection") cannot give cookies, we need to use io.engine.on("initial_headers"). think this as the same as io.on("connection") with some lower level control
+// read https://socket.io/how-to/deal-with-cookies for more
+io.engine.on("initial_headers", (headers, request) => {
+  console.log(request.headers.cookie);
+  const cookies = cookie.parse(request.headers.cookie);
+  const id = cookies["device-id"];
+  if (id && idLastWrittenMap.has(id)) {
+    // this device already has a cookie and the server recognizes the cookie
+    return;
+  }
 
   // create crypto-safe random value (correct me if I'm wrong)
-  crypto.randomBytes(32, (err, buf) => { // 32 bytes = 256 bits = 2 ^ 256 possibilities
-    if (err) throw new Error("node:crypto.randomBytes has failed. I have no idea what happened. Here's the error anyways: " + err.toString());
-    buf; // TODO!
+  const buf = crypto.randomBytes(32); // 32 bytes = 256 bits = 2 ^ 256 possibilities
+  const hex = buf.toString("hex");
+  headers["set-cookie"] = cookie.serialize("device-id", hex, {
+    maxAge: 3 * 24 * 60 * 60, // 3 days, komaba-fest proof
+    httpOnly: true,
   });
+  idLastWrittenMap.set(hex, Date.now());
+
+  return;
 });
 
 app.put("/place-pixel", (req, res) => {
+  if (!req.cookies) {
+    res.status(400).send("Bad Request: cookie not found");
+  }
+  const deviceId = req.cookies["device-id"];
+  if (deviceId) {
+    res.status(400).send("Bad Request: cookie `device-id` not found");
+    return;
+  }
+  const lastWrittenTime = idLastWrittenMap.get(deviceId);
+  if (lastWrittenTime === undefined) {
+    // if, by any chance, the server happened to crash and restart while being connected to the client, this might happen.
+    res
+      .status(400)
+      .send("Bad Request: Unknown cookie. where did you get that from?");
+    return;
+  }
+  if (
+    Date.now() - lastWrittenTime <
+    BUTTON_COOLDOWN_SECONDS * 1000 - 50 /* random small positive number */
+  ) {
+    // this random small positive number prevents small server-side and connection lags from blocking legitmate requests
+    res
+      .status(400)
+      .send(
+        `Bad Request: Last written time recorded in the server is less than ${BUTTON_COOLDOWN_SECONDS} seconds ago.`,
+      );
+    return;
+  }
+  idLastWrittenMap.set(deviceId, Date.now());
+
   let intermediate_buffer_dont_mind_me: Ev | null = null;
   try {
-    intermediate_buffer_dont_mind_me = req.body as Ev; // this fails for some reason?
+    intermediate_buffer_dont_mind_me = req.body as Ev;
   } catch (e) {
     res.status(400).send("Invalid request.");
     return;

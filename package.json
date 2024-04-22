@@ -4,11 +4,11 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "start": "npm run backend:build && npm run serve:dev",
+    "start": "npm run backend:dev & npm run frontend:dev",
     "release": "npm run build && npm run serve",
     "test": "npm run precommit && npm run release",
     "frontend:dev": "npx vite",
-    "backend:dev": "npm run backend:build && npm run backend:serve",
+    "backend:dev": "npm run backend:build && npm run serve",
     "build": "npx tsc && npm run frontend:build && npm run backend:build",
     "frontend:build": "vite build ./ --outDir vite-dist --emptyOutDir",
     "backend:build": "rm -rf tsc-dist && tsc",

@@ -227,14 +227,14 @@ app.put("/place-pixel", (req, res) => {
   }
   idLastWrittenMap.set(deviceId, Date.now());
 
-  let intermediate_buffer_dont_mind_me: Ev | null = null;
+  let intermediateBufferDontMindMe: Ev | null = null;
   try {
-    intermediate_buffer_dont_mind_me = req.body as Ev;
+    intermediateBufferDontMindMe = req.body as Ev;
   } catch (e) {
     res.status(400).send("Invalid request.");
     return;
   }
-  const ev = intermediate_buffer_dont_mind_me;
+  const ev = intermediateBufferDontMindMe;
   onPlacePixel(ev);
   res.status(202).send("ok"); // since websocket will do the actual work, we just send status 202: Accepted
 });

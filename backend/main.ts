@@ -4,12 +4,7 @@ import cors from "cors";
 import crypto from "node:crypto";
 import cookie from "cookie";
 
-import { NODE_ENV, WEB_ORIGIN, VITE_API_ENDPOINT } from "./env.js";
-
-const use = (...args: unknown[]) => {
-  args;
-};
-use(NODE_ENV, VITE_API_ENDPOINT);
+import { NODE_ENV, WEB_ORIGIN } from "./env.js";
 
 const doLogging = NODE_ENV === "development";
 if (doLogging) {
@@ -18,9 +13,9 @@ if (doLogging) {
 
 const log = doLogging
   ? (...x: any[]) => {
-    console.log(...x);
-  }
-  : () => { };
+      console.log(...x);
+    }
+  : () => {};
 
 const app = express();
 
@@ -51,7 +46,6 @@ const io = new Server(httpServer, {
 });
 
 const BUTTON_COOLDOWN_SECONDS = 10;
-BUTTON_COOLDOWN_SECONDS;
 const IMAGE_WIDTH = 16;
 const IMAGE_HEIGHT = 16;
 // const DATA_LEN = IMAGE_HEIGHT * IMAGE_WIDTH * 4;
@@ -175,7 +169,8 @@ io.on("connection", (socket) => {
 // since io.on("connection") cannot give cookies, we need to use io.engine.on("initial_headers"). think this as the same as io.on("connection") with some lower level control
 // read https://socket.io/how-to/deal-with-cookies for more
 io.engine.on("initial_headers", (headers, request) => {
-  const cookies = request.headers.cookie && cookie.parse(request.headers.cookie);
+  const cookies =
+    request.headers.cookie && cookie.parse(request.headers.cookie);
   if (cookies) {
     const id = cookies["device-id"];
     if (id && idLastWrittenMap.has(id)) {

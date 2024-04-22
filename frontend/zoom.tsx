@@ -4,38 +4,12 @@
 
 import React from "react";
 import { IntoImage } from "./IntoImage";
+import { upscale } from "./upscale";
 
-export function zoom(
-  arr: Uint8ClampedArray,
-  width: number,
-  height: number,
-  ratio: number,
-): Uint8ClampedArray {
-  console.assert(arr.length === width * height * 4);
-  const len = width * height;
-  const square = ratio ** 2;
-  const long = len * square;
-  const ret = new Uint8ClampedArray(long * 4);
-  const wl = width * ratio;
-  for (let i = 0; i < long; ++i) {
-    const w = i % wl;
-    const h = (i - w) / wl;
-    const originalW = Math.floor(w / ratio);
-    const originalH = Math.floor(h / ratio);
-    const idx = (originalH * width + originalW) * 4; // idx is muitiplied by 4, but i isn't.
-    ret[i * 4] = arr[idx];
-    ret[i * 4 + 1] = arr[idx + 1];
-    ret[i * 4 + 2] = arr[idx + 2];
-    ret[i * 4 + 3] = arr[idx + 3];
-  }
-  console.assert(ret.length === height * width * ratio ** 2 * 4);
-  return ret;
-}
-
-export function ZoomedImage({ data, w, h, ratio }): React.JSX.Element {
+export function UpscaledImage({ data, w, h, ratio }): React.JSX.Element {
   return (
     <div>
-      <IntoImage arr={zoom(data, w, h, ratio)} w={w * ratio} h={h * ratio} />
+      <IntoImage arr={upscale(data, w, h, ratio)} w={w * ratio} h={h * ratio} />
     </div>
   );
 }

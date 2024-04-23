@@ -160,11 +160,14 @@ type Id = string;
 const idLastWrittenMap = new Map<Id, number>();
 // this is precision-safe until September 13, 275760 AD. refer https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/Date
 // clear the cookie log if there is no one connected anymore, to prevent overflowing
-setTimeout(() => {
-  if (io.engine.clientsCount === 0) {
-    idLastWrittenMap.clear();
-  }
-}. 30 * 60 * 1000);
+setTimeout(
+  () => {
+    if (io.engine.clientsCount === 0) {
+      idLastWrittenMap.clear();
+    }
+  },
+  30 * 60 * 1000,
+);
 
 // socket events need to be registered inside here.
 // on connection is one of the few exceptions. (i don't know other exceptions though)
@@ -175,8 +178,13 @@ io.on("connection", (socket) => {
 // since io.on("connection") cannot give cookies, we need to use io.engine.on("initial_headers"). think this as the same as io.on("connection") with some lower level control
 // read https://socket.io/how-to/deal-with-cookies for more
 io.engine.on("initial_headers", (headers, request) => {
-  const cookies =
-    request.headers.cookie && cookie.parse(request.headers.cookie);
+  let cookies = undefined;
+  try {
+    cookies = request.headers.cookie && cookie.parse(request.headers.cookie);
+  } catch (e) {
+    log(e);
+    return;
+  }
   if (cookies) {
     const id = cookies["device-id"];
     if (id && idLastWrittenMap.has(id)) {

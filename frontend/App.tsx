@@ -1,13 +1,15 @@
 import React, { useEffect, useState, useRef } from "react";
 import { socket } from "./socket.js";
-import { VITE_API_ENDPOINT } from "./env";
 import { UpscaledImage } from "./zoom.tsx";
 import "./App.css";
 
-const BACKEND_URL = VITE_API_ENDPOINT;
+const BACKEND_URL =
+  import.meta.env.VITE_API_ENDPOINT || "https://mayfest-rplace.onrender.com";
 const BUTTON_COOLDOWN_PROD = 10; // this fallback is used in release, because on render build command cannot access environment variables
 const BUTTON_COOLDOWN_SECONDS =
   import.meta?.env?.VITE_BUTTON_COOLDOWN ?? BUTTON_COOLDOWN_PROD;
+console.log(BUTTON_COOLDOWN_SECONDS);
+console.log(import.meta.env.VITE_BUTTON_COOLDOWN);
 const IMAGE_HEIGHT = 16;
 const IMAGE_WIDTH = 16;
 const IMAGE_DATA_LEN = IMAGE_HEIGHT * IMAGE_WIDTH * 4;

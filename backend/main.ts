@@ -4,7 +4,7 @@ import cors from "cors";
 import crypto from "node:crypto";
 import cookie from "cookie";
 
-import { NODE_ENV, WEB_ORIGIN } from "./env.js";
+import { VITE_BUTTON_COOLDOWN, NODE_ENV, WEB_ORIGIN } from "./env.js";
 
 const doLogging = NODE_ENV === "development";
 if (doLogging) {
@@ -45,7 +45,7 @@ const io = new Server(httpServer, {
   cookie: true,
 });
 
-const BUTTON_COOLDOWN_SECONDS = 10;
+const BUTTON_COOLDOWN_SECONDS = VITE_BUTTON_COOLDOWN || 10; // the fallback will be used in prod
 const IMAGE_WIDTH = 16;
 const IMAGE_HEIGHT = 16;
 // const DATA_LEN = IMAGE_HEIGHT * IMAGE_WIDTH * 4;

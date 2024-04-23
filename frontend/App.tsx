@@ -229,9 +229,12 @@ async function get(path: string) {
 
 // PUT doesn't return anything.
 function put<T>(path: string, data: T) {
-  fetch(BACKEND_URL + path, {
+  fetch(path, {
+    headers: {
+      "Content-Type": "application/json",
+    },
+    credentials: "include",
     method: "put",
-    headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data),
   });
 }

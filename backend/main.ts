@@ -49,6 +49,9 @@ const BUTTON_COOLDOWN_SECONDS = VITE_BUTTON_COOLDOWN || 10; // the fallback will
 const IMAGE_WIDTH = 16;
 const IMAGE_HEIGHT = 16;
 // const DATA_LEN = IMAGE_HEIGHT * IMAGE_WIDTH * 4;
+const COOKIE_SAME_SITE_RESTRICTION =
+  NODE_ENV === "development" ? "strict" : "strict";
+log(COOKIE_SAME_SITE_RESTRICTION);
 
 const data = createRandomArray(IMAGE_WIDTH, IMAGE_HEIGHT);
 
@@ -189,6 +192,7 @@ io.engine.on("initial_headers", (headers, request) => {
     const id = cookies["device-id"];
     if (id && idLastWrittenMap.has(id)) {
       // this device already has a cookie and the server recognizes the cookie
+      log("Ignored a device that already has a cookie");
       return;
     }
   }
@@ -197,10 +201,12 @@ io.engine.on("initial_headers", (headers, request) => {
   const buf = crypto.randomBytes(32); // 32 bytes = 256 bits = 2 ^ 256 possibilities
   const hex = buf.toString("hex");
   headers["set-cookie"] = cookie.serialize("device-id", hex, {
+    sameSite: COOKIE_SAME_SITE_RESTRICTION,
     maxAge: 3 * 24 * 60 * 60, // 3 days, komaba-fest proof
-    httpOnly: true,
+    httpOnly: false,
   });
   idLastWrittenMap.set(hex, Date.now());
+  log("Granted a device an id");
 
   return;
 });
@@ -208,11 +214,13 @@ io.engine.on("initial_headers", (headers, request) => {
 app.put("/place-pixel", (req, res) => {
   if (!req.cookies) {
     res.status(400).send("Bad Request: cookie not found");
+    log("Blocked a request: cookie not found");
     return;
   }
   const deviceId = req.cookies["device-id"];
   if (deviceId) {
     res.status(400).send("Bad Request: cookie `device-id` not found");
+    log("Blocked a request: cookie `device-id` not found");
     return;
   }
   const lastWrittenTime = idLastWrittenMap.get(deviceId);
@@ -221,6 +229,7 @@ app.put("/place-pixel", (req, res) => {
     res
       .status(400)
       .send("Bad Request: Unknown cookie. where did you get that from?");
+    log("Blocked a request: unknown device id");
     return;
   }
   if (
@@ -233,6 +242,7 @@ app.put("/place-pixel", (req, res) => {
       .send(
         `Bad Request: Last written time recorded in the server is less than ${BUTTON_COOLDOWN_SECONDS} seconds ago.`,
       );
+    log("Blocked a request: request too often");
     return;
   }
   idLastWrittenMap.set(deviceId, Date.now());
@@ -242,11 +252,13 @@ app.put("/place-pixel", (req, res) => {
     intermediateBufferDontMindMe = req.body as Ev;
   } catch (e) {
     res.status(400).send("Invalid request.");
+    log("Blocked a request: invalid request body");
     return;
   }
   const ev = intermediateBufferDontMindMe;
   onPlacePixel(ev);
   res.status(202).send("ok"); // since websocket will do the actual work, we just send status 202: Accepted
+  log("Accepted a request: placed one pixel");
 });
 
 function createRandomArray(width: number, height: number) {

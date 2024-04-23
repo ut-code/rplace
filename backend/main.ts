@@ -208,6 +208,7 @@ io.engine.on("initial_headers", (headers, request) => {
 app.put("/place-pixel", (req, res) => {
   if (!req.cookies) {
     res.status(400).send("Bad Request: cookie not found");
+    return;
   }
   const deviceId = req.cookies["device-id"];
   if (deviceId) {

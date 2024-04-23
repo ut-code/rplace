@@ -3,6 +3,7 @@ import { Server } from "socket.io";
 import cors from "cors";
 import crypto from "node:crypto";
 import cookie from "cookie";
+import cookieParser from "cookie-parser";
 
 import { VITE_BUTTON_COOLDOWN, NODE_ENV, WEB_ORIGIN } from "./env.js";
 
@@ -24,7 +25,7 @@ if (WEB_ORIGIN) {
 }
 
 app.use(express.json());
-
+app.use(cookieParser());
 app.use(express.static("./vite-dist"));
 
 /* * * * * * */
@@ -162,15 +163,6 @@ so I might add a recaptcha later.
 type Id = string;
 const idLastWrittenMap = new Map<Id, number>();
 // this is precision-safe until September 13, 275760 AD. refer https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/Date
-// clear the cookie log if there is no one connected anymore, to prevent overflowing
-setTimeout(
-  () => {
-    if (io.engine.clientsCount === 0) {
-      idLastWrittenMap.clear();
-    }
-  },
-  30 * 60 * 1000,
-);
 
 // socket events need to be registered inside here.
 // on connection is one of the few exceptions. (i don't know other exceptions though)
@@ -181,13 +173,8 @@ io.on("connection", (socket) => {
 // since io.on("connection") cannot give cookies, we need to use io.engine.on("initial_headers"). think this as the same as io.on("connection") with some lower level control
 // read https://socket.io/how-to/deal-with-cookies for more
 io.engine.on("initial_headers", (headers, request) => {
-  let cookies = undefined;
-  try {
-    cookies = request.headers.cookie && cookie.parse(request.headers.cookie);
-  } catch (e) {
-    log(e);
-    return;
-  }
+  const cookies =
+    request.headers.cookie && cookie.parse(request.headers.cookie);
   if (cookies) {
     const id = cookies["device-id"];
     if (id && idLastWrittenMap.has(id)) {
@@ -202,8 +189,9 @@ io.engine.on("initial_headers", (headers, request) => {
   const hex = buf.toString("hex");
   headers["set-cookie"] = cookie.serialize("device-id", hex, {
     sameSite: COOKIE_SAME_SITE_RESTRICTION,
-    maxAge: 3 * 24 * 60 * 60, // 3 days, komaba-fest proof
+    maxAge: 3 * 24 * 60 * 60, // 3 days, komaba-fest proof ( I guess the server will become inactive and reset at night anyways)
     httpOnly: false,
+    path: "/",
   });
   idLastWrittenMap.set(hex, Date.now());
   log("Granted a device an id");
@@ -217,8 +205,9 @@ app.put("/place-pixel", (req, res) => {
     log("Blocked a request: cookie not found");
     return;
   }
+  log(req.cookies);
   const deviceId = req.cookies["device-id"];
-  if (deviceId) {
+  if (!deviceId) {
     res.status(400).send("Bad Request: cookie `device-id` not found");
     log("Blocked a request: cookie `device-id` not found");
     return;

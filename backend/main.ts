@@ -163,6 +163,15 @@ so I might add a recaptcha later.
 type Id = string;
 const idLastWrittenMap = new Map<Id, number>();
 // this is precision-safe until September 13, 275760 AD. refer https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/Date
+// clear the cookie log if there is no one connected anymore, to prevent overflowing
+setTimeout(
+  () => {
+    if (io.engine.clientsCount === 0) {
+      idLastWrittenMap.clear();
+    }
+  },
+  30 * 60 * 1000,
+);
 
 // socket events need to be registered inside here.
 // on connection is one of the few exceptions. (i don't know other exceptions though)

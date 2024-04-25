@@ -170,7 +170,7 @@ setTimeout(
       idLastWrittenMap.clear();
     }
   },
-  30 * 60 * 1000,
+  5 * 60 * 1000,
 );
 
 // socket events need to be registered inside here.

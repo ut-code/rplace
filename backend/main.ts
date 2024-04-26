@@ -10,22 +10,28 @@ const use = (...args: unknown[]) => {
 };
 use(NODE_ENV, VITE_API_ENDPOINT);
 
+const doLogging = NODE_ENV === "development";
+if (doLogging) {
+  console.log("do logging: true");
+}
+
+const log = doLogging
+  ? (...x: any[]) => {
+      console.log(...x);
+    }
+  : () => {};
+
 const app = express();
 
 app.use(cors({ origin: WEB_ORIGIN }));
 
 app.use(express.json());
 
-// backend integration examples
-let count = 0;
-app.post("/add", (req, res) => {
-  count += req.body.number;
-  res.send({ count });
-});
+app.use(express.static("./vite-dist"));
 
 /* * * * * * */
 
-const PORT = 3200;
+const PORT = process.env.PORT || 3200;
 const httpServer = app.listen(PORT, () => {
   console.log(`|backend| Listening on ${PORT}...`);
 });
@@ -61,10 +67,17 @@ function placePixel(
     a: number;
   }
 ) {
-  // remove these assertions in prod
-  if (x >= IMAGE_WIDTH || y >= IMAGE_HEIGHT)
-    throw new Error(`Invalid x or y found in placePixel().
-    x: ${x}, y: ${y}`);
+  if (
+    x >= IMAGE_WIDTH ||
+    y >= IMAGE_HEIGHT ||
+    x < 0 ||
+    y < 0 ||
+    !Number.isInteger(x) ||
+    !Number.isInteger(y)
+  ) {
+    log(`Invalid x or y found in placePixel(). x: ${x}, y: ${y}`);
+    return;
+  }
   if (
     color.r < 0 ||
     color.g < 0 ||
@@ -75,12 +88,23 @@ function placePixel(
     color.b > 255 ||
     color.a > 255
   ) {
-    throw new Error(`Invalid RGBA value found. rgba: {
+    log(`Invalid RGBA value found. rgba: {
       r: ${color.r}
       g: ${color.g}
       b: ${color.b}
       a: ${color.a}
     }`);
+    return;
+  }
+  if (
+    [color.r, color.g, color.b, color.a]
+      .map((n) => Number.isInteger(n))
+      .some((b: boolean) => !b)
+  ) {
+    log(
+      `some value is not integer. r: ${color.r}, g: ${color.g}, b: ${color.b}, a: ${color.a}`,
+    );
+    return;
   }
   const first_idx = (IMAGE_WIDTH * y + x) * 4;
   data[first_idx] = color.r;
@@ -102,7 +126,7 @@ events:
 - "re-render" : server -> client, re-renders the entire canvas (contains all pixels data)
 */
 
-async function onDecidingPixelColor(ev: {
+type Ev = {
   x: number;
   y: number;
   color: {
@@ -111,9 +135,10 @@ async function onDecidingPixelColor(ev: {
     b: number;
     a: number;
   };
-}) {
-  console.log("socket event 'place-pixel' received.");
-  console.log(ev);
+};
+function onPlacePixel(ev: Ev) {
+  log("socket event 'place-pixel' received.");
+  log(ev);
   placePixel(ev.x, ev.y, ev.color);
   // of() is for namespaces, and to() is for rooms
   const newPixelColor = await client.pixelColor.create({
@@ -126,7 +151,19 @@ async function onDecidingPixelColor(ev: {
 // on connection is one of the few exceptions. (i don't know other exceptions though)
 io.on("connection", (socket) => {
   socket.join("pixel-sync");
-  socket.on("place-pixel", onDecidingPixelColor);
+});
+app.put("/place-pixel", (req, res) => {
+  let intermediate_buffer_dont_mind_me: Ev | null = null;
+  try {
+    intermediate_buffer_dont_mind_me = req.body as Ev; // this fails for some reason?
+  } catch (e) {
+    console.log(e, req.body);
+    res.status(400).send("Invalid request.");
+    return;
+  }
+  const ev = intermediate_buffer_dont_mind_me;
+  onPlacePixel(ev);
+  res.status(202).send("ok"); // since websocket will do the actual work, we just send status 202: Accepted
 });
 
 function createRandomArray(width: number, height: number) {

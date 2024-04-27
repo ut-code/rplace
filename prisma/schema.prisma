@@ -15,5 +15,7 @@ datasource db {
 
 model PixelColor {
   id Int @id @default(autoincrement())
-  data String
+  colIndex Int
+  rowIndex Int
+  data Int[]
 }

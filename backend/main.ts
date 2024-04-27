@@ -129,22 +129,48 @@ events:
 - "re-render" : server -> client, re-renders the entire canvas (contains all pixels data)
 */
 
-function onDecidingPixelColor(ev: PlacePixelRequest) {
+async function onDecidingPixelColor(ev: PlacePixelRequest) {
+  const { x, y, color } = ev;
   log("socket event 'place-pixel' received.");
   log(ev);
   placePixel(ev);
   // of() is for namespaces, and to() is for rooms
-  const newPixelColor = await client.pixelColor.create({
-    data: { data: JSON.stringify(data) },
+  io.of("/").to("pixel-sync").emit("re-render", data);
+  await client.pixelColor.update({
+    where: { colIndex: x, rowIndex: y },
+    data: { data: JSON.stringify(data.slice(x + 16 * y, x + 16 * y + 2)) },
   });
-  io.of("/").to("pixel-sync").emit("re-render", newPixelColor.data);
 }
 
 // socket events need to be registered inside here.
 // on connection is one of the few exceptions. (i don't know other exceptions though)
 io.on("connection", (socket) => {
   socket.join("pixel-sync");
+  const rowIndex: number = 0;
+  const colIndex: number = 0;
+  const data: number[] = [];
+  while (rowIndex < 16) {
+    while (colIndex < 16) {
+      client.query(
+        `SELECT data FROM pixelColor WHERE rowIndex = ${rowIndex} AND colIndex = ${colIndex}`,
+        (error: any[], results: number[]) => {
+          if (error) {
+            socket.emit("error", {
+              message: "Couldn't get information from database.",
+            });
+          } else {
+            data[rowIndex * 16 + colIndex] = results[0];
+            data[rowIndex * 16 + colIndex + 1] = results[1];
+            data[rowIndex * 16 + colIndex + 2] = results[2];
+            data[rowIndex * 16 + colIndex + 3] = 255;
+          }
+        }
+      );
+    }
+  }
+  socket.emit("data", data);
 });
+
 app.put("/place-pixel", (req, res) => {
   let intermediate_buffer_dont_mind_me: PlacePixelRequest | null = null;
   try {

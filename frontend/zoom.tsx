@@ -23,15 +23,17 @@ export function UpscaledImage({
   h: number;
   ratio: number;
   onClick: React.MouseEventHandler;
-  overlay: { coord: number[]; color: number[] };
+  overlay: Overlay;
 }): React.JSX.Element {
+  const arr = upscale(data, w, h, ratio);
   return (
     <div>
       <IntoImage
-        arr={upscale(data, w, h, ratio)}
+        arr={arr}
         w={w * ratio}
         h={h * ratio}
         onClick={onClick}
+        overlay={overlay}
       />
     </div>
   );

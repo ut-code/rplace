@@ -123,7 +123,7 @@ events:
 - "place-pixel" : client -> server, used to place pixel (contains only one pixel data)
 - "re-render" : server -> client, re-renders the entire canvas (contains all pixels data)
 */
-type Ev = {
+type PlacePixelRequest = {
   x: number;
   y: number;
   color: {
@@ -133,7 +133,7 @@ type Ev = {
     a: number;
   };
 };
-function onPlacePixel(ev: Ev) {
+function onPlacePixel(ev: PlacePixelRequest) {
   log("socket event 'place-pixel' received.");
   log(ev);
   placePixel(ev.x, ev.y, ev.color);
@@ -147,9 +147,9 @@ io.on("connection", (socket) => {
   socket.join("pixel-sync");
 });
 app.put("/place-pixel", (req, res) => {
-  let intermediate_buffer_dont_mind_me: Ev | null = null;
+  let intermediate_buffer_dont_mind_me: PlacePixelRequest | null = null;
   try {
-    intermediate_buffer_dont_mind_me = req.body as Ev; // this fails for some reason?
+    intermediate_buffer_dont_mind_me = req.body as PlacePixelRequest; // this fails for some reason?
   } catch (e) {
     console.log(e, req.body);
     res.status(400).send("Invalid request.");

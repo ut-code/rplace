@@ -56,15 +56,9 @@ app.get("/image", (_, res) => {
 });
 
 function placePixel(
-  x: number,
-  y: number,
-  color: {
-    r: number;
-    g: number;
-    b: number;
-    a: number;
-  },
+  ev: PlacePixelRequest,
 ) {
+  const {x, y, color} = ev;
   if (
     x >= IMAGE_WIDTH ||
     y >= IMAGE_HEIGHT ||
@@ -136,7 +130,7 @@ type PlacePixelRequest = {
 function onPlacePixel(ev: PlacePixelRequest) {
   log("socket event 'place-pixel' received.");
   log(ev);
-  placePixel(ev.x, ev.y, ev.color);
+  placePixel(ev);
   // of() is for namespaces, and to() is for rooms
   io.of("/").to("pixel-sync").emit("re-render", data);
 }
@@ -151,7 +145,7 @@ app.put("/place-pixel", (req, res) => {
   try {
     intermediate_buffer_dont_mind_me = req.body as PlacePixelRequest; // this fails for some reason?
   } catch (e) {
-    console.log(e, req.body);
+    log(e, req.body);
     res.status(400).send("Invalid request.");
     return;
   }

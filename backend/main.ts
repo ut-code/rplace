@@ -2,13 +2,11 @@ import express from "express";
 import { Server } from "socket.io";
 import cors from "cors";
 import { PrismaClient } from "@prisma/client";
+import crypto from "node:crypto";
+import cookie from "cookie";
+import cookieParser from "cookie-parser";
 
-import { NODE_ENV, WEB_ORIGIN, VITE_API_ENDPOINT } from "./env.js";
-
-const use = (...args: unknown[]) => {
-  args;
-};
-use(NODE_ENV, VITE_API_ENDPOINT);
+import { VITE_BUTTON_COOLDOWN, NODE_ENV, WEB_ORIGIN } from "./env.js";
 
 const doLogging = NODE_ENV === "development";
 if (doLogging) {
@@ -23,10 +21,12 @@ const log = doLogging
 
 const app = express();
 
-app.use(cors({ origin: WEB_ORIGIN }));
+if (WEB_ORIGIN) {
+  app.use(cors({ origin: WEB_ORIGIN }));
+}
 
 app.use(express.json());
-
+app.use(cookieParser());
 app.use(express.static("./vite-dist"));
 
 /* * * * * * */
@@ -42,13 +42,18 @@ const httpServer = app.listen(PORT, () => {
 // read https://socket.io/docs/v4/server-api/
 const io = new Server(httpServer, {
   cors: {
-    origin: process.env.WEB_ORIGIN!,
+    origin: WEB_ORIGIN!,
   },
+  cookie: true,
 });
 
+const BUTTON_COOLDOWN_SECONDS = VITE_BUTTON_COOLDOWN || 10; // the fallback will be used in prod
 const IMAGE_WIDTH = 16;
 const IMAGE_HEIGHT = 16;
 // const DATA_LEN = IMAGE_HEIGHT * IMAGE_WIDTH * 4;
+const COOKIE_SAME_SITE_RESTRICTION =
+  NODE_ENV === "development" ? "strict" : "strict";
+log(COOKIE_SAME_SITE_RESTRICTION);
 
 const data = createRandomArray(IMAGE_WIDTH, IMAGE_HEIGHT);
 const client = new PrismaClient();
@@ -105,7 +110,7 @@ function placePixel(ev: PlacePixelRequest) {
       .some((b: boolean) => !b)
   ) {
     log(
-      `some value is not integer. r: ${color.r}, g: ${color.g}, b: ${color.b}, a: ${color.a}`
+      `some value is not integer. r: ${color.r}, g: ${color.g}, b: ${color.b}, a: ${color.a}`,
     );
     return;
   }
@@ -142,6 +147,33 @@ async function onDecidingPixelColor(ev: PlacePixelRequest) {
   });
 }
 
+/* request validation.
+0. prepare: a map (I'm calling it `idLastWrittenMap` from now on)
+1. store keys that should be one-to-one to clients. (I'm calling this `client id` from now on)
+  (one-to-one means that clients should not share the same key, and a client's device should not have more than two keys (if this functionality is possible))
+2. on connection, create an entry (k-v pair) in idLastWrittenMap with client id as key and current time as value.
+  - don't forget to defer deleting on disconnection
+3. on place-pixel request, consider the request valid if:
+  a. there is an entry that matches the id of the client, and
+  b. current time - (the entry's value) >= $BUTTON_COOLDOWN_SECONDS * 1000 - (some possible clock delay like 100ms idk)
+
+yes, it's possible to attack this via cli socket.io client + concurrent processes. 
+so I might add a recaptcha later.
+*/
+
+type Id = string;
+const idLastWrittenMap = new Map<Id, number>();
+// this is precision-safe until September 13, 275760 AD. refer https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/Date
+// clear the cookie log if there is no one connected anymore, to prevent overflowing
+setTimeout(
+  () => {
+    if (io.engine.clientsCount === 0) {
+      idLastWrittenMap.clear();
+    }
+  },
+  5 * 60 * 1000,
+);
+
 // socket events need to be registered inside here.
 // on connection is one of the few exceptions. (i don't know other exceptions though)
 io.on("connection", (socket) => {
@@ -171,18 +203,84 @@ io.on("connection", (socket) => {
   socket.emit("data", data);
 });
 
+// since io.on("connection") cannot give cookies, we need to use io.engine.on("initial_headers"). think this as the same as io.on("connection") with some lower level control
+// read https://socket.io/how-to/deal-with-cookies for more
+io.engine.on("initial_headers", (headers, request) => {
+  const cookies =
+    request.headers.cookie && cookie.parse(request.headers.cookie);
+  if (cookies) {
+    const id = cookies["device-id"];
+    if (id && idLastWrittenMap.has(id)) {
+      // this device already has a cookie and the server recognizes the cookie
+      log("Ignored a device that already has a cookie");
+      return;
+    }
+  }
+
+  // create crypto-safe random value (correct me if I'm wrong)
+  const buf = crypto.randomBytes(32); // 32 bytes = 256 bits = 2 ^ 256 possibilities
+  const hex = buf.toString("hex");
+  headers["set-cookie"] = cookie.serialize("device-id", hex, {
+    sameSite: COOKIE_SAME_SITE_RESTRICTION,
+    maxAge: 3 * 24 * 60 * 60, // 3 days, komaba-fest proof ( I guess the server will become inactive and reset at night anyways)
+    httpOnly: false,
+    path: "/",
+  });
+  idLastWrittenMap.set(hex, Date.now());
+  log("Granted a device an id");
+
+  return;
+});
+
 app.put("/place-pixel", (req, res) => {
-  let intermediate_buffer_dont_mind_me: PlacePixelRequest | null = null;
-  try {
-    intermediate_buffer_dont_mind_me = req.body as PlacePixelRequest; // this fails for some reason?
-  } catch (e) {
-    log(e, req.body);
-    res.status(400).send("Invalid request.");
+  if (!req.cookies) {
+    res.status(400).send("Bad Request: cookie not found");
+    log("Blocked a request: cookie not found");
     return;
   }
-  const ev = intermediate_buffer_dont_mind_me;
+  log(req.cookies);
+  const deviceId = req.cookies["device-id"];
+  if (!deviceId) {
+    res.status(400).send("Bad Request: cookie `device-id` not found");
+    log("Blocked a request: cookie `device-id` not found");
+    return;
+  }
+  const lastWrittenTime = idLastWrittenMap.get(deviceId);
+  if (lastWrittenTime === undefined) {
+    // if, by any chance, the server happened to crash and restart while being connected to the client, this might happen.
+    res
+      .status(400)
+      .send("Bad Request: Unknown cookie. where did you get that from?");
+    log("Blocked a request: unknown device id");
+    return;
+  }
+  if (
+    Date.now() - lastWrittenTime <
+    BUTTON_COOLDOWN_SECONDS * 1000 - 50 /* random small positive number */
+  ) {
+    // this random small positive number prevents small server-side and connection lags from blocking legitmate requests
+    res
+      .status(400)
+      .send(
+        `Bad Request: Last written time recorded in the server is less than ${BUTTON_COOLDOWN_SECONDS} seconds ago.`,
+      );
+    log("Blocked a request: request too often");
+    return;
+  }
+  idLastWrittenMap.set(deviceId, Date.now());
+
+  let intermediateBufferDontMindMe: PlacePixelRequest | null = null;
+  try {
+    intermediateBufferDontMindMe = req.body as PlacePixelRequest;
+  } catch (e) {
+    res.status(400).send("Invalid request.");
+    log("Blocked a request: invalid request body");
+    return;
+  }
+  const ev = intermediateBufferDontMindMe;
   onDecidingPixelColor(ev);
   res.status(202).send("ok"); // since websocket will do the actual work, we just send status 202: Accepted
+  log("Accepted a request: placed one pixel");
 });
 
 function createRandomArray(width: number, height: number) {

@@ -11,6 +11,9 @@ dotenv.config(
 
 const NODE_ENV = process.env.NODE_ENV,
   WEB_ORIGIN = process.env.WEB_ORIGIN,
-  VITE_API_ENDPOINT = process.env.VITE_API_ENDPOINT;
+  VITE_API_ENDPOINT = process.env.VITE_API_ENDPOINT,
+  VITE_BUTTON_COOLDOWN =
+    process.env.VITE_BUTTON_COOLDOWN &&
+    parseInt(process.env.VITE_BUTTON_COOLDOWN);
 
-export { NODE_ENV, WEB_ORIGIN, VITE_API_ENDPOINT };
+export { NODE_ENV, WEB_ORIGIN, VITE_BUTTON_COOLDOWN, VITE_API_ENDPOINT };

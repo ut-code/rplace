@@ -60,16 +60,19 @@ app.get("/image", (_, res) => {
   res.send(JSON.stringify(data));
 });
 
-function placePixel(
-  x: number,
-  y: number,
+type PlacePixelRequest = {
+  x: number;
+  y: number;
   color: {
     r: number;
     g: number;
     b: number;
     a: number;
-  },
-) {
+  };
+};
+
+function placePixel(ev: PlacePixelRequest) {
+  const { x, y, color } = ev;
   if (
     x >= IMAGE_WIDTH ||
     y >= IMAGE_HEIGHT ||
@@ -128,20 +131,11 @@ events:
 - "place-pixel" : client -> server, used to place pixel (contains only one pixel data)
 - "re-render" : server -> client, re-renders the entire canvas (contains all pixels data)
 */
-type Ev = {
-  x: number;
-  y: number;
-  color: {
-    r: number;
-    g: number;
-    b: number;
-    a: number;
-  };
-};
-function onPlacePixel(ev: Ev) {
+
+function onDecidingPixelColor(ev: PlacePixelRequest) {
   log("socket event 'place-pixel' received.");
   log(ev);
-  placePixel(ev.x, ev.y, ev.color);
+  placePixel(ev);
   // of() is for namespaces, and to() is for rooms
   io.of("/").to("pixel-sync").emit("re-render", data);
 }
@@ -245,16 +239,16 @@ app.put("/place-pixel", (req, res) => {
   }
   idLastWrittenMap.set(deviceId, Date.now());
 
-  let intermediateBufferDontMindMe: Ev | null = null;
+  let intermediateBufferDontMindMe: PlacePixelRequest | null = null;
   try {
-    intermediateBufferDontMindMe = req.body as Ev;
+    intermediateBufferDontMindMe = req.body as PlacePixelRequest;
   } catch (e) {
     res.status(400).send("Invalid request.");
     log("Blocked a request: invalid request body");
     return;
   }
   const ev = intermediateBufferDontMindMe;
-  onPlacePixel(ev);
+  onDecidingPixelColor(ev);
   res.status(202).send("ok"); // since websocket will do the actual work, we just send status 202: Accepted
   log("Accepted a request: placed one pixel");
 });

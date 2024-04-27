@@ -1,4 +1,4 @@
-# MAYFEST/RPLACE
+# MAYFEST/UPLACE
 
 ## how to setup
 

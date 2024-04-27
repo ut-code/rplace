@@ -6,10 +6,33 @@ import React from "react";
 import { IntoImage } from "./IntoImage";
 import { upscale } from "./upscale";
 
-export function UpscaledImage({ data, w, h, ratio }): React.JSX.Element {
+type Overlay = {
+  coord: number[];
+  color: number[];
+};
+export function UpscaledImage({
+  data,
+  w,
+  h,
+  ratio,
+  onClick,
+  overlay,
+}: {
+  data: Uint8ClampedArray;
+  w: number;
+  h: number;
+  ratio: number;
+  onClick: React.MouseEventHandler;
+  overlay: { coord: number[]; color: number[] };
+}): React.JSX.Element {
   return (
     <div>
-      <IntoImage arr={upscale(data, w, h, ratio)} w={w * ratio} h={h * ratio} />
+      <IntoImage
+        arr={upscale(data, w, h, ratio)}
+        w={w * ratio}
+        h={h * ratio}
+        onClick={onClick}
+      />
     </div>
   );
 }

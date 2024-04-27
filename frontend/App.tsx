@@ -13,6 +13,7 @@ console.log(import.meta.env.VITE_BUTTON_COOLDOWN);
 const IMAGE_HEIGHT = 16;
 const IMAGE_WIDTH = 16;
 const IMAGE_DATA_LEN = IMAGE_HEIGHT * IMAGE_WIDTH * 4;
+const PIXEL_SIZE = 16;
 
 type Color = number[];
 const colors: Color[] = [
@@ -29,8 +30,8 @@ const colors: Color[] = [
 function App() {
   // const [imageSrc, setImageSrc] = useState<string | null>(null); // eslint says it's not used
   const [gridColors, setGridColors] = useState<string[][]>([]);
-  const [imageData, setImageData] = useState<number[]>(() =>
-    new Array(IMAGE_DATA_LEN).fill(0),
+  const [imageData, setImageData] = useState<Uint8ClampedArray>(() =>
+    new Uint8ClampedArray(IMAGE_DATA_LEN).fill(0),
   );
   useEffect(() => {
     // Call setImageData to generate the image data
@@ -65,11 +66,10 @@ function App() {
     fetchImage();
   }, []);
 
-  // Socket.io example.
   function onReRender(data: number[]) {
     // TODO!
     console.log("rerender", data.length);
-    setImageData(data);
+    setImageData(Uint8ClampedArray.from(data));
     console.log("re-render request received!");
   }
 
@@ -141,6 +141,16 @@ function App() {
     setSelectedColumn(columnIndex);
   };
 
+  const [selectedX, setSelectedX] = useState<number>(0);
+  const [selectedY, setSelectedY] = useState<number>(0);
+  function onImageClick(ev: React.MouseEvent): void {
+    const x = ev.nativeEvent.offsetX;
+    const y = ev.nativeEvent.offsetY;
+    setSelectedX(Math.floor(x / PIXEL_SIZE));
+    setSelectedY(Math.floor(y / PIXEL_SIZE));
+    return;
+  }
+
   return (
     <>
       <h1>r/place</h1>
@@ -148,7 +158,12 @@ function App() {
         data={imageData}
         w={IMAGE_WIDTH}
         h={IMAGE_HEIGHT}
-        ratio={16}
+        ratio={PIXEL_SIZE}
+        onClick={onImageClick}
+        overlay={{
+          coord: [selectedX, selectedY],
+          color: selectedColor,
+        }}
       />
       <div className="grid-container">
         <div className="grid" style={{}} ref={gridRef}>
@@ -178,9 +193,9 @@ function App() {
         <div className="selection-section">
           {selectedRow !== null && selectedColumn !== null ? (
             <p>
-              Selected pixel: Row{" "}
-              {selectedRow !== null ? selectedRow + 1 : "N/A"}, Column{" "}
-              {selectedColumn !== null ? selectedColumn + 1 : "N/A"}
+              Selected pixel: Row {selectedRow !== null ? selectedRow : "N/A"},
+              Column {selectedColumn !== null ? selectedColumn : "N/A"}
+              {`X: ${selectedX}, Y: ${selectedY}`}
             </p>
           ) : (
             <p>No pixel selected</p>

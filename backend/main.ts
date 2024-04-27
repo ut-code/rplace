@@ -55,10 +55,19 @@ app.get("/image", (_, res) => {
   res.send(JSON.stringify(data));
 });
 
-function placePixel(
-  ev: PlacePixelRequest,
-) {
-  const {x, y, color} = ev;
+type PlacePixelRequest = {
+  x: number;
+  y: number;
+  color: {
+    r: number;
+    g: number;
+    b: number;
+    a: number;
+  };
+};
+
+function placePixel(ev: PlacePixelRequest) {
+  const { x, y, color } = ev;
   if (
     x >= IMAGE_WIDTH ||
     y >= IMAGE_HEIGHT ||
@@ -94,7 +103,7 @@ function placePixel(
       .some((b: boolean) => !b)
   ) {
     log(
-      `some value is not integer. r: ${color.r}, g: ${color.g}, b: ${color.b}, a: ${color.a}`,
+      `some value is not integer. r: ${color.r}, g: ${color.g}, b: ${color.b}, a: ${color.a}`
     );
     return;
   }
@@ -117,16 +126,7 @@ events:
 - "place-pixel" : client -> server, used to place pixel (contains only one pixel data)
 - "re-render" : server -> client, re-renders the entire canvas (contains all pixels data)
 */
-type PlacePixelRequest = {
-  x: number;
-  y: number;
-  color: {
-    r: number;
-    g: number;
-    b: number;
-    a: number;
-  };
-};
+
 function onPlacePixel(ev: PlacePixelRequest) {
   log("socket event 'place-pixel' received.");
   log(ev);

@@ -110,7 +110,7 @@ function placePixel(ev: PlacePixelRequest) {
       .some((b: boolean) => !b)
   ) {
     log(
-      `some value is not integer. r: ${color.r}, g: ${color.g}, b: ${color.b}, a: ${color.a}`,
+      `some value is not integer. r: ${color.r}, g: ${color.g}, b: ${color.b}, a: ${color.a}`
     );
     return;
   }
@@ -134,15 +134,14 @@ events:
 - "re-render" : server -> client, re-renders the entire canvas (contains all pixels data)
 */
 
-async function onDecidingPixelColor(ev: PlacePixelRequest) {
-  const { x, y, color } = ev;
+async function onPlacePixelRequest(ev: PlacePixelRequest) {
   log("socket event 'place-pixel' received.");
   log(ev);
   placePixel(ev);
   // of() is for namespaces, and to() is for rooms
   io.of("/").to("pixel-sync").emit("re-render", data);
   await client.pixelColor.update({
-    where: { colIndex: x, rowIndex: y },
+    where: { colIndex: ev.x, rowIndex: ev.y },
     data: { data: JSON.stringify(data.slice(x + 16 * y, x + 16 * y + 2)) },
   });
 }
@@ -171,7 +170,7 @@ setTimeout(
       idLastWrittenMap.clear();
     }
   },
-  5 * 60 * 1000,
+  5 * 60 * 1000
 );
 
 // socket events need to be registered inside here.
@@ -262,7 +261,7 @@ app.put("/place-pixel", (req, res) => {
     res
       .status(400)
       .send(
-        `Bad Request: Last written time recorded in the server is less than ${BUTTON_COOLDOWN_SECONDS} seconds ago.`,
+        `Bad Request: Last written time recorded in the server is less than ${BUTTON_COOLDOWN_SECONDS} seconds ago.`
       );
     log("Blocked a request: request too often");
     return;
@@ -278,7 +277,7 @@ app.put("/place-pixel", (req, res) => {
     return;
   }
   const ev = intermediateBufferDontMindMe;
-  onDecidingPixelColor(ev);
+  onPlacePixelRequest(ev);
   res.status(202).send("ok"); // since websocket will do the actual work, we just send status 202: Accepted
   log("Accepted a request: placed one pixel");
 });

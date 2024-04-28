@@ -132,7 +132,7 @@ events:
 - "re-render" : server -> client, re-renders the entire canvas (contains all pixels data)
 */
 
-function onDecidingPixelColor(ev: PlacePixelRequest) {
+function onPlacePixelRequest(ev: PlacePixelRequest) {
   log("socket event 'place-pixel' received.");
   log(ev);
   placePixel(ev);
@@ -248,7 +248,7 @@ app.put("/place-pixel", (req, res) => {
     return;
   }
   const ev = intermediateBufferDontMindMe;
-  onDecidingPixelColor(ev);
+  onPlacePixelRequest(ev);
   res.status(202).send("ok"); // since websocket will do the actual work, we just send status 202: Accepted
   log("Accepted a request: placed one pixel");
 });

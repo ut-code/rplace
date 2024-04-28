@@ -5,6 +5,7 @@
 import React from "react";
 import { IntoImage } from "./IntoImage";
 import { upscale } from "./upscale";
+import { applyOverlay } from "./apply-overlay.ts";
 
 type Overlay = {
   coord: number[];
@@ -26,14 +27,20 @@ export function UpscaledImage({
   overlay: Overlay;
 }): React.JSX.Element {
   const arr = upscale(data, w, h, ratio);
+  const withOverlayApplied = Uint8ClampedArray.from(arr);
+  applyOverlay(withOverlayApplied, {
+    center: overlay.coord.map(n => n * ratio).map(s => s + ratio/2),
+    color: overlay.color,
+    width: w * ratio,
+    radius: Math.floor(ratio) / 2,
+  });
   return (
     <div>
       <IntoImage
-        arr={arr}
+        arr={withOverlayApplied}
         w={w * ratio}
         h={h * ratio}
         onClick={onClick}
-        overlay={overlay}
       />
     </div>
   );

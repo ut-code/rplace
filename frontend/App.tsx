@@ -51,9 +51,8 @@ function App() {
     setGridColors(colors);
   }, [imageData]);
 
-  const [selectedRow, setSelectedRow] = useState<number>(0);
-  const [selectedColumn, setSelectedColumn] = useState<number>(0);
-  const gridRef = useRef<HTMLDivElement>(null);
+  const [selectedX, setSelectedX] = useState<number>(0);
+  const [selectedY, setSelectedY] = useState<number>(0);
   const [selectedColor, setSelectedColor] = useState<Color>([255, 255, 255]);
 
   // backend integration (with Cross-Origin Resource Share) example.
@@ -81,8 +80,8 @@ function App() {
 
   function handlePlace() {
     const ev = {
-      x: selectedColumn,
-      y: selectedRow,
+      x: selectedX,
+      y: selectedY,
       color: {
         r: selectedColor[0],
         g: selectedColor[1],
@@ -106,16 +105,16 @@ function App() {
     const handleKeyDown = (event: KeyboardEvent) => {
       switch (event.key) {
         case "ArrowUp":
-          setSelectedRow((prevRow) => Math.max(prevRow - 1, 0));
+          setSelectedX((prevRow) => Math.max(prevRow - 1, 0));
           break;
         case "ArrowDown":
-          setSelectedRow((prevRow) => Math.min(prevRow + 1, IMAGE_HEIGHT - 1));
+          setSelectedX((prevRow) => Math.min(prevRow + 1, IMAGE_HEIGHT - 1));
           break;
         case "ArrowLeft":
-          setSelectedColumn((prevColumn) => Math.max(prevColumn - 1, 0));
+          setSelectedY((prevColumn) => Math.max(prevColumn - 1, 0));
           break;
         case "ArrowRight":
-          setSelectedColumn((prevColumn) =>
+          setSelectedY((prevColumn) =>
             Math.min(prevColumn + 1, IMAGE_WIDTH - 1),
           );
           break;
@@ -129,20 +128,13 @@ function App() {
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [selectedRow, selectedColumn]);
+  }, [selectedX, selectedY]);
 
   const handleColorSelection = (color: Color) => {
     setSelectedColor(color);
     console.log("Selected color:", color);
   };
 
-  const handleCellClick = (rowIndex: number, columnIndex: number) => {
-    setSelectedRow(rowIndex);
-    setSelectedColumn(columnIndex);
-  };
-
-  const [selectedX, setSelectedX] = useState<number>(0);
-  const [selectedY, setSelectedY] = useState<number>(0);
   function onImageClick(ev: React.MouseEvent): void {
     const x = ev.nativeEvent.offsetX;
     const y = ev.nativeEvent.offsetY;
@@ -166,40 +158,8 @@ function App() {
         }}
       />
       <div className="grid-container">
-        <div className="grid" style={{}} ref={gridRef}>
-          {gridColors.map((rowColors, rowIndex) => (
-            <div key={rowIndex} className="grid-row">
-              {rowColors.map((color, columnIndex) => (
-                <div
-                  key={columnIndex}
-                  className="grid-cell"
-                  style={{ backgroundColor: color }}
-                  onClick={() => handleCellClick(rowIndex, columnIndex)}
-                >
-                  {selectedRow === rowIndex &&
-                    selectedColumn === columnIndex && (
-                      <div
-                        className="selected-box"
-                        style={{
-                          backgroundColor: rgb(selectedColor) || undefined,
-                        }}
-                      />
-                    )}
-                </div>
-              ))}
-            </div>
-          ))}
-        </div>
         <div className="selection-section">
-          {selectedRow !== null && selectedColumn !== null ? (
-            <p>
-              Selected pixel: Row {selectedRow !== null ? selectedRow : "N/A"},
-              Column {selectedColumn !== null ? selectedColumn : "N/A"}
               {`X: ${selectedX}, Y: ${selectedY}`}
-            </p>
-          ) : (
-            <p>No pixel selected</p>
-          )}
         </div>
       </div>
       <div className="color-selection">

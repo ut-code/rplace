@@ -147,8 +147,16 @@ async function onPlacePixelRequest(ev: PlacePixelRequest) {
   io.of("/").to("pixel-sync").emit("re-render", data);
   await client.pixelColor.update({
     where: { colIndex: x, rowIndex: y },
+<<<<<<< HEAD
     data: { data: JSON.stringify(data.slice(x + 16 * y, x + 16 * y + 2)) },
 >>>>>>> bc7846f (connect database)
+=======
+    data: {
+      data: JSON.stringify(
+        data.slice(x + IMAGE_WIDTH * y, x + IMAGE_WIDTH * y + 2)
+      ),
+    },
+>>>>>>> 285e0d1 (made minor changes)
   });
   io.of("/").to("pixel-sync").emit("re-render", newPixelColor.data);
   await client.pixelColor.update({
@@ -189,11 +197,9 @@ setTimeout(
 // on connection is one of the few exceptions. (i don't know other exceptions though)
 io.on("connection", (socket) => {
   socket.join("pixel-sync");
-  const rowIndex: number = 0;
-  const colIndex: number = 0;
   const data: number[] = [];
-  while (rowIndex < 16) {
-    while (colIndex < 16) {
+  for (let rowIndex = 0; rowIndex < IMAGE_HEIGHT; rowIndex++) {
+    for (let colIndex = 0; colIndex < IMAGE_WIDTH; colIndex++) {
       client.query(
         `SELECT data FROM pixelColor WHERE rowIndex = ${rowIndex} AND colIndex = ${colIndex}`,
         (error: any[], results: number[]) => {
@@ -202,10 +208,11 @@ io.on("connection", (socket) => {
               message: "Couldn't get information from database.",
             });
           } else {
-            data[rowIndex * 16 + colIndex] = results[0];
-            data[rowIndex * 16 + colIndex + 1] = results[1];
-            data[rowIndex * 16 + colIndex + 2] = results[2];
-            data[rowIndex * 16 + colIndex + 3] = 255;
+            const first_idx = (rowIndex * IMAGE_WIDTH + colIndex) * 4;
+            data[first_idx] = results[0];
+            data[first_idx + 1] = results[1];
+            data[first_idx + 2] = results[2];
+            data[first_idx + 3] = 255;
           }
         }
       );
@@ -299,10 +306,10 @@ function createRandomArray(width: number, height: number) {
   for (let h = 0; h < height; h++) {
     for (let w = 0; w < width; w++) {
       const idx = (h * width + w) * 4;
-      arr[idx] = (16 * w) % 256; // Red
-      arr[idx + 1] = (16 * h) % 256; // Green
-      arr[idx + 2] = (16 * idx) % 256; // Blue
-      arr[idx + 3] = 255; // Alpha (transparency)
+      arr[idx] = Math.floor((h * 255) / IMAGE_HEIGHT); //red
+      arr[idx + 1] = Math.floor((w * 255) / IMAGE_WIDTH); //green
+      arr[idx + 2] = (IMAGE_WIDTH * h + w) % (IMAGE_WIDTH - 1); //blue
+      arr[idx + 3] = 255; //alpha (transparency)
     }
   }
   return Array.from(arr);

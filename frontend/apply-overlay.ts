@@ -10,7 +10,7 @@ export function applyOverlay(data: Uint8ClampedArray, info: {
     const y = i % (width * 4) / 4;
     if (Math.abs(center[1] - x) < radius && Math.abs(center[0] - y) < radius) {
       // do some extra blocking here
-      if (Math.random() < 0.2) {
+      if (Math.random() < 0.5) {
         continue;
       }
       data[i] = color[0];

@@ -4,7 +4,7 @@ import { UpscaledImage } from "./zoom.tsx";
 import "./App.css";
 
 const BACKEND_URL =
-  import.meta.env.VITE_API_ENDPOINT || "https://mayfest-rplace.onrender.com";
+  import.meta.env.VITE_API_ENDPOINT || "";
 const BUTTON_COOLDOWN_PROD = 10; // this fallback is used in release, because on render build command cannot access environment variables
 const BUTTON_COOLDOWN_SECONDS =
   import.meta?.env?.VITE_BUTTON_COOLDOWN ?? BUTTON_COOLDOWN_PROD;

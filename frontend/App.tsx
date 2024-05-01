@@ -144,7 +144,7 @@ function App() {
 
   return (
     <>
-      <p className="dotGothic16-regular">r/place</p>
+      <p className="dotGothic16-regular">u/place</p>
       {/* <div className="logo-container">
         <LogoGrid />
       </div> */}

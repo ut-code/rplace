@@ -282,10 +282,14 @@ function createRandomArray(width: number, height: number) {
   for (let h = 0; h < height; h++) {
     for (let w = 0; w < width; w++) {
       const idx = (h * width + w) * 4;
-      arr[idx] = (16 * w) % 256; // Red
-      arr[idx + 1] = (16 * h) % 256; // Green
-      arr[idx + 2] = (16 * idx) % 256; // Blue
-      arr[idx + 3] = 255; // Alpha (transparency)
+      // arr[idx] = (16 * w) % 256; // Red
+      // arr[idx + 1] = (16 * h) % 256; // cGreen
+      // arr[idx + 2] = (16 * idx) % 256; // Blue
+      // arr[idx + 3] = 255; // Alpha (transparency)
+      arr[idx] = Math.floor(Math.random() * 256); // Red
+      arr[idx + 1] = Math.floor(Math.random() * 256); // cGreen
+      arr[idx + 2] = Math.floor(Math.random() * 256); // Blue
+      arr[idx + 3] = Math.floor(Math.random() * 256); // Alpha (transparency)
     }
   }
   return Array.from(arr);

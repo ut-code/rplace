@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=DotGothic16&display=swap');
+
 #root {
   max-width: 1280px;
   margin: 0 auto;
@@ -83,4 +85,46 @@
   height: 20px;
   margin: 0 5px;
   cursor: pointer;
+}
+
+
+.logo-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 50px;
+}
+
+.logo-grid {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.letter {
+  width: 25px;
+  height: 25px;
+  margin-right: 5px;
+}
+
+.row {
+  display: flex;
+}
+
+.pixel {
+  width: 5px;
+  height: 5px;
+}
+
+.black {
+  background-color: transparent;
+}
+
+.white {
+  background-color: white;
+}
+
+.dotGothic16-regular {
+  font-family: 'DotGothic16', sans-serif;
+  font-weight: 400;
+  font-style: normal;
+  font-size: 50px;
 }

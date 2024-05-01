@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { socket } from "./socket.js";
 import { UpscaledImage } from "./zoom.tsx";
 import "./App.css";
+import LogoGrid from "./LogoGrid";
 
 const BACKEND_URL = import.meta.env.VITE_API_ENDPOINT || "";
 const BUTTON_COOLDOWN_PROD = 10; // this fallback is used in release, because on render build command cannot access environment variables
@@ -29,7 +30,7 @@ const colors: Color[] = [
 function App() {
   // const [imageSrc, setImageSrc] = useState<string | null>(null); // eslint says it's not used
   const [imageData, setImageData] = useState<Uint8ClampedArray>(() =>
-    new Uint8ClampedArray(IMAGE_DATA_LEN).fill(0),
+    new Uint8ClampedArray(IMAGE_DATA_LEN).fill(0)
   );
 
   const [selectedX, setSelectedX] = useState<number>(0);
@@ -123,7 +124,10 @@ function App() {
 
   return (
     <>
-      <h1>r/place</h1>
+      <p className="dotGothic16-regular">r/place</p>
+      {/* <div className="logo-container">
+        <LogoGrid />
+      </div> */}
       <UpscaledImage
         data={imageData}
         w={IMAGE_WIDTH}

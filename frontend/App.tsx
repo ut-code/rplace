@@ -3,6 +3,7 @@ import { socket } from "./socket.js";
 import { VITE_API_ENDPOINT } from "./env";
 import { UpscaledImage } from "./zoom.tsx";
 import "./App.css";
+import LogoGrid from "./LogoGrid";
 
 const BACKEND_URL = VITE_API_ENDPOINT;
 const BUTTON_COOLDOWN_PROD = 10; // this fallback is used in release, because on render build command cannot access environment variables
@@ -29,7 +30,7 @@ function App() {
   // const [imageSrc, setImageSrc] = useState<string | null>(null); // eslint says it's not used
   const [gridColors, setGridColors] = useState<string[][]>([]);
   const [imageData, setImageData] = useState<Uint8ClampedArray>(() =>
-    new Uint8ClampedArray(IMAGE_DATA_LEN).fill(0),
+    new Uint8ClampedArray(IMAGE_DATA_LEN).fill(0)
   );
   useEffect(() => {
     // Call setImageData to generate the image data
@@ -113,7 +114,7 @@ function App() {
           break;
         case "ArrowRight":
           setSelectedY((prevColumn) =>
-            Math.min(prevColumn + 1, IMAGE_WIDTH - 1),
+            Math.min(prevColumn + 1, IMAGE_WIDTH - 1)
           );
           break;
         default:
@@ -143,7 +144,10 @@ function App() {
 
   return (
     <>
-      <h1>r/place</h1>
+      <p className="dotGothic16-regular">r/place</p>
+      {/* <div className="logo-container">
+        <LogoGrid />
+      </div> */}
       <UpscaledImage
         data={imageData}
         w={IMAGE_WIDTH}
@@ -157,7 +161,7 @@ function App() {
       />
       <div className="grid-container">
         <div className="selection-section">
-              {`X: ${selectedX}, Y: ${selectedY}`}
+          {`X: ${selectedX}, Y: ${selectedY}`}
         </div>
       </div>
       <div className="color-selection">

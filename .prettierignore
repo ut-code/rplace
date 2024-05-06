@@ -1,4 +1,5 @@
 node_modules/
+.node
 tsc-dist/
 vite-dist/
 package-lock.json

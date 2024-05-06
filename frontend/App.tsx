@@ -1,10 +1,9 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import { socket } from "./socket.js";
 import { UpscaledImage } from "./zoom.tsx";
 import "./App.css";
 
-const BACKEND_URL =
-  import.meta.env.VITE_API_ENDPOINT || "";
+const BACKEND_URL = import.meta.env.VITE_API_ENDPOINT || "";
 const BUTTON_COOLDOWN_PROD = 10; // this fallback is used in release, because on render build command cannot access environment variables
 const BUTTON_COOLDOWN_SECONDS =
   import.meta?.env?.VITE_BUTTON_COOLDOWN ?? BUTTON_COOLDOWN_PROD;
@@ -29,27 +28,9 @@ const colors: Color[] = [
 
 function App() {
   // const [imageSrc, setImageSrc] = useState<string | null>(null); // eslint says it's not used
-  const [gridColors, setGridColors] = useState<string[][]>([]);
   const [imageData, setImageData] = useState<Uint8ClampedArray>(() =>
     new Uint8ClampedArray(IMAGE_DATA_LEN).fill(0),
   );
-  useEffect(() => {
-    // Call setImageData to generate the image data
-
-    // Extract colors from the generated image data and update grid colors
-    const colors: string[][] = [];
-    for (let i = 0; i < IMAGE_HEIGHT; i++) {
-      const rowColors: string[] = [];
-      for (let j = 0; j < IMAGE_WIDTH; j++) {
-        const idx = (IMAGE_WIDTH * i + j) * 4;
-        const arr = imageData.slice(idx, idx + 4);
-        const color = `rgba(${arr[0]}, ${arr[1]}, ${arr[2]}, ${arr[3]})`;
-        rowColors.push(color);
-      }
-      colors.push(rowColors);
-    }
-    setGridColors(colors);
-  }, [imageData]);
 
   const [selectedX, setSelectedX] = useState<number>(0);
   const [selectedY, setSelectedY] = useState<number>(0);
@@ -104,18 +85,16 @@ function App() {
     const handleKeyDown = (event: KeyboardEvent) => {
       switch (event.key) {
         case "ArrowUp":
-          setSelectedX((prevRow) => Math.max(prevRow - 1, 0));
+          setSelectedY((y) => Math.max(y - 1, 0));
           break;
         case "ArrowDown":
-          setSelectedX((prevRow) => Math.min(prevRow + 1, IMAGE_HEIGHT - 1));
+          setSelectedY((y) => Math.min(y + 1, IMAGE_HEIGHT - 1));
           break;
         case "ArrowLeft":
-          setSelectedY((prevColumn) => Math.max(prevColumn - 1, 0));
+          setSelectedX((x) => Math.max(x - 1, 0));
           break;
         case "ArrowRight":
-          setSelectedY((prevColumn) =>
-            Math.min(prevColumn + 1, IMAGE_WIDTH - 1),
-          );
+          setSelectedX((x) => Math.min(x + 1, IMAGE_WIDTH - 1));
           break;
         default:
           break;
@@ -158,7 +137,7 @@ function App() {
       />
       <div className="grid-container">
         <div className="selection-section">
-              {`X: ${selectedX}, Y: ${selectedY}`}
+          {`X: ${selectedX}, Y: ${selectedY}`}
         </div>
       </div>
       <div className="color-selection">

@@ -3,7 +3,7 @@ import { socket } from "./socket.js";
 import { UpscaledImage } from "./zoom.tsx";
 import "./App.css";
 import LogoGrid from "./LogoGrid";
-import rplaceLogo from "./assets/logo.png";
+import rplaceLogo from "./assets/logo-art.png";
 import sampleTargetImage from "./assets/sample-target-image.png";
 import Timer from "./Timer";
 
@@ -131,7 +131,7 @@ function App() {
         <img src={rplaceLogo} className="logo" alt="logo" />
       </div>
 
-      <div className="target-image-section">
+      {/* <div className="target-image-section">
         <div className="target-image-container">
           <h2>Target Image</h2>
           <img
@@ -140,7 +140,7 @@ function App() {
             alt="target-image"
           />
         </div>
-      </div>
+      </div> */}
 
       <UpscaledImage
         data={imageData}
@@ -170,9 +170,16 @@ function App() {
         ))}
       </div>
       {clickCD <= 0 ? (
-        <button className="available-button" onClick={handlePlace}>Place!!!</button>
+        <button className="available-button" onClick={handlePlace}>
+          Place!!!
+        </button>
       ) : (
-        <div>PLEASE WAIT {clickCD} SECONDS BEFOR CLIK</div>
+        <div className="unavailable-button">
+          <button className="gray-out-button" disabled>
+            Place!!!
+          </button>
+          <p>PLEASE WAIT {clickCD} SECONDS BEFORE CLICK</p>
+        </div>
       )}
     </>
   );

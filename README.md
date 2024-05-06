@@ -28,6 +28,10 @@ npm run backend:dev
 
 in two separate process
 
+## Before commit / making PR
+
+run `npm test` and make sure that it's running
+
 ## Releasing
 
 releasing will be automatically done after updating branch `release`. make sure main is working before merging to release.

@@ -3,10 +3,7 @@ import { socket } from "./socket.js";
 import { VITE_API_ENDPOINT } from "./env";
 import { UpscaledImage } from "./zoom.tsx";
 import "./App.css";
-import LogoGrid from "./LogoGrid";
-import rplaceLogo from "./assets/logo-art2.png";
-import sampleTargetImage from "./assets/sample-target-image.png";
-import Timer from "./Timer";
+import rplaceLogo from "./assets/logo-art.png";
 
 const BACKEND_URL = VITE_API_ENDPOINT;
 const BUTTON_COOLDOWN_PROD = 10; // this fallback is used in release, because on render build command cannot access environment variables

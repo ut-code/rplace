@@ -29,7 +29,7 @@ const colors: Color[] = [
 function App() {
   // const [imageSrc, setImageSrc] = useState<string | null>(null); // eslint says it's not used
   const [imageData, setImageData] = useState<Uint8ClampedArray>(() =>
-    new Uint8ClampedArray(IMAGE_DATA_LEN).fill(0),
+    new Uint8ClampedArray(IMAGE_DATA_LEN).fill(0)
   );
 
   const [selectedX, setSelectedX] = useState<number>(0);
@@ -161,7 +161,7 @@ function App() {
             <button
               className="gray-out-button"
               style={{
-                "--progress-width": `${(BUTTON_COOLDOWN_SECONDS - clickCD) * 10}%`,
+                "--progress-width": `${(BUTTON_COOLDOWN_SECONDS - clickCD) * 100 / 9}%`,
               }} // Adjust the progress width dynamically
               disabled
             >

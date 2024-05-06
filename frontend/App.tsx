@@ -4,7 +4,7 @@ import { VITE_API_ENDPOINT } from "./env";
 import { UpscaledImage } from "./zoom.tsx";
 import "./App.css";
 import LogoGrid from "./LogoGrid";
-import rplaceLogo from "./assets/logo-art.png";
+import rplaceLogo from "./assets/logo-art2.png";
 import sampleTargetImage from "./assets/sample-target-image.png";
 import Timer from "./Timer";
 
@@ -19,14 +19,13 @@ const PIXEL_SIZE = 16;
 
 type Color = number[];
 const colors: Color[] = [
-  [255, 255, 255], // white
-  [0, 255, 255],
-  [0, 0, 255],
-  [255, 0, 255],
-  [255, 0, 0],
-  [255, 255, 0],
-  [0, 255, 0],
-  [0, 0, 0], // black
+  [0, 0, 0],
+  [218, 56, 50],
+  [239, 133, 50],
+  [181, 228, 77],
+  [82, 180, 234],
+  [103, 53, 147],
+  [255, 255, 255],
 ];
 
 function App() {
@@ -151,16 +150,6 @@ function App() {
         <img src={rplaceLogo} className="logo" alt="logo" />
       </div>
 
-      {/* <div className="target-image-section">
-        <div className="target-image-container">
-          <h2>Target Image</h2>
-          <img
-            src={sampleTargetImage}
-            className="target-image"
-            alt="target-image"
-          />
-        </div>
-      </div> */}
 
       <UpscaledImage
         data={imageData}
@@ -190,14 +179,19 @@ function App() {
         ))}
       </div>
       {clickCD <= 0 ? (
+        <div className="available-button-section">
         <button className="available-button" onClick={handlePlace}>
           Place!!!
         </button>
+        <p>&nbsp;</p>
+      </div>
       ) : (
-        <div className="unavailable-button">
-          <button className="gray-out-button" disabled>
-            Place!!!
-          </button>
+        <div className="unavailable-button-section">
+          <div className="unavailable-button">
+            <button className="gray-out-button" disabled>
+              Place!!!
+            </button>
+          </div>
           <p>PLEASE WAIT {clickCD} SECONDS BEFORE CLICK</p>
         </div>
       )}

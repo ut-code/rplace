@@ -13,9 +13,9 @@ export function applyOverlay(
     const y = (i % (width * 4)) / 4;
     if (Math.abs(center[1] - x) < radius && Math.abs(center[0] - y) < radius) {
       // do some extra blocking here
-      // if (Math.random() < 0.5) {
-      //   continue;
-      // }
+      if (Math.abs(alignedCenter[1] - x) + Math.abs(alignedCenter[0] - y) < radius) {
+        continue;
+      }
       data[i] = color[0];
       data[i + 1] = color[1];
       data[i + 2] = color[2];

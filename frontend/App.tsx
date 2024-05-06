@@ -3,6 +3,9 @@ import { socket } from "./socket.js";
 import { UpscaledImage } from "./zoom.tsx";
 import "./App.css";
 import LogoGrid from "./LogoGrid";
+import rplaceLogo from "./assets/logo.png";
+import sampleTargetImage from "./assets/sample-target-image.png";
+import Timer from "./Timer";
 
 const BACKEND_URL = import.meta.env.VITE_API_ENDPOINT || "";
 const BUTTON_COOLDOWN_PROD = 10; // this fallback is used in release, because on render build command cannot access environment variables
@@ -124,10 +127,21 @@ function App() {
 
   return (
     <>
-      <p className="dotGothic16-regular">u/place</p>
-      {/* <div className="logo-container">
-        <LogoGrid />
-      </div> */}
+      <div className="header">
+        <img src={rplaceLogo} className="logo" alt="logo" />
+      </div>
+
+      <div className="target-image-section">
+        <div className="target-image-container">
+          <h2>Target Image</h2>
+          <img
+            src={sampleTargetImage}
+            className="target-image"
+            alt="target-image"
+          />
+        </div>
+      </div>
+
       <UpscaledImage
         data={imageData}
         w={IMAGE_WIDTH}
@@ -139,6 +153,7 @@ function App() {
           color: selectedColor,
         }}
       />
+
       <div className="grid-container">
         <div className="selection-section">
           {`X: ${selectedX}, Y: ${selectedY}`}
@@ -155,7 +170,7 @@ function App() {
         ))}
       </div>
       {clickCD <= 0 ? (
-        <button onClick={handlePlace}>Place!!!</button>
+        <button className="available-button" onClick={handlePlace}>Place!!!</button>
       ) : (
         <div>PLEASE WAIT {clickCD} SECONDS BEFOR CLIK</div>
       )}
@@ -184,7 +199,6 @@ async function get(path: string) {
   return fetch(path).then((res) => res.json());
 }
 
-// PUT doesn't return anything.
 function put<T>(path: string, data: T) {
   fetch(path, {
     headers: {

@@ -29,7 +29,7 @@ const colors: Color[] = [
 function App() {
   // const [imageSrc, setImageSrc] = useState<string | null>(null); // eslint says it's not used
   const [imageData, setImageData] = useState<Uint8ClampedArray>(() =>
-    new Uint8ClampedArray(IMAGE_DATA_LEN).fill(0)
+    new Uint8ClampedArray(IMAGE_DATA_LEN).fill(0),
   );
 
   const [selectedX, setSelectedX] = useState<number>(0);
@@ -127,7 +127,6 @@ function App() {
         <img src={rplaceLogo} className="logo" alt="logo" />
       </div>
 
-
       <UpscaledImage
         data={imageData}
         w={IMAGE_WIDTH}
@@ -157,11 +156,11 @@ function App() {
       </div>
       {clickCD <= 0 ? (
         <div className="available-button-section">
-        <button className="available-button" onClick={handlePlace}>
-          Place!!!
-        </button>
-        <p>&nbsp;</p>
-      </div>
+          <button className="available-button" onClick={handlePlace}>
+            Place!!!
+          </button>
+          <p>&nbsp;</p>
+        </div>
       ) : (
         <div className="unavailable-button-section">
           <div className="unavailable-button">

@@ -139,11 +139,6 @@ function App() {
         }}
       />
 
-      <div className="grid-container">
-        <div className="selection-section">
-          {`X: ${selectedX}, Y: ${selectedY}`}
-        </div>
-      </div>
       <div className="color-selection">
         {colors.map((color, index) => (
           <div
@@ -157,18 +152,22 @@ function App() {
       {clickCD <= 0 ? (
         <div className="available-button-section">
           <button className="available-button" onClick={handlePlace}>
-            Place!!!
+            Place Pixel
           </button>
-          <p>&nbsp;</p>
         </div>
       ) : (
         <div className="unavailable-button-section">
           <div className="unavailable-button">
-            <button className="gray-out-button" disabled>
-              Place!!!
+            <button
+              className="gray-out-button"
+              style={{
+                "--progress-width": `${(BUTTON_COOLDOWN_SECONDS - clickCD) * 10}%`,
+              }} // Adjust the progress width dynamically
+              disabled
+            >
+              Place Pixel
             </button>
           </div>
-          <p>PLEASE WAIT {clickCD} SECONDS BEFORE CLICK</p>
         </div>
       )}
     </>

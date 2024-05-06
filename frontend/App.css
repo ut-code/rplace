@@ -82,13 +82,25 @@ body {
 
 .gray-out-button {
   background-color: #ccc;
-  opacity: 0.5;
-  pointer-events: none;
-  cursor: not-allowed;
+  position: relative;
   border: none;
   padding: 10px 20px;
   font-weight: bold;
   border-radius: 0px;
+  overflow: hidden;
+  color: rgb(50, 50, 50);
+}
+
+.gray-out-button::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: var(--progress-width);
+  background-color: rgba(255, 255, 255, 0.7);
+  transition: width 1s linear;
+  color: rgb(50, 50, 50);
 }
 
 .selection-section {

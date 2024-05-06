@@ -67,7 +67,7 @@ body {
 }
 
 .available-button:hover {
-  background-color: #ccc;
+  background-color: rgb(200, 200, 200);
 }
 
 .unavailable-button-section {
@@ -81,7 +81,7 @@ body {
 }
 
 .gray-out-button {
-  background-color: #ccc;
+  background-color: rgb(100, 100, 100);
   position: relative;
   border: none;
   padding: 10px 20px;

@@ -47,7 +47,8 @@ const io = new Server(httpServer, {
   cookie: true,
 });
 
-const BUTTON_COOLDOWN_SECONDS = VITE_BUTTON_COOLDOWN || 10; // the fallback will be used in prod
+console.log(VITE_BUTTON_COOLDOWN);
+const BUTTON_COOLDOWN_SECONDS = VITE_BUTTON_COOLDOWN != null ? VITE_BUTTON_COOLDOWN : 10; // the fallback will be used in prod
 const IMAGE_WIDTH = 16;
 const IMAGE_HEIGHT = 16;
 // const DATA_LEN = IMAGE_HEIGHT * IMAGE_WIDTH * 4;

@@ -189,14 +189,11 @@ function hex(n: number): string {
 }
 
 async function get(path: string) {
-  if (BACKEND_URL) {
-    return await fetch(BACKEND_URL + path).then((res) => res.json());
-  }
-  return fetch(path).then((res) => res.json());
+  return fetch(BACKEND_URL + path).then((res) => res.json());
 }
 
 function put<T>(path: string, data: T) {
-  fetch(path, {
+  fetch(BACKEND_URL + path, {
     headers: {
       "Content-Type": "application/json",
     },

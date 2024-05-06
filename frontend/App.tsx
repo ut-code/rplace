@@ -110,7 +110,6 @@ function App() {
 
   const handleColorSelection = (color: Color) => {
     setSelectedColor(color);
-    console.log("Selected color:", color);
   };
 
   function onImageClick(ev: React.MouseEvent): void {

@@ -283,9 +283,10 @@ function createRandomArray(width: number, height: number) {
     for (let w = 0; w < width; w++) {
       const idx = (h * width + w) * 4;
       arr[idx] = (16 * w) % 256; // Red
-      arr[idx + 1] = (16 * h) % 256; // cGreen
+      arr[idx + 1] = (16 * h) % 256; // Green
       arr[idx + 2] = (16 * idx) % 256; // Blue
       arr[idx + 3] = 255; // Alpha (transparency)
+
     }
   }
   return Array.from(arr);

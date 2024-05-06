@@ -17,7 +17,7 @@ body {
   will-change: filter;
   transition: filter 300ms;
   object-fit: contain;
-  max-width: 70%;
+  max-width: 60%;
 }
 
 .logo.react:hover {
@@ -39,43 +39,8 @@ body {
   }
 }
 
-.card {
-  padding: 2em;
-}
-
 .read-the-docs {
   color: #888;
-}
-
-.grid {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1px;
-}
-
-.grid-row {
-  display: flex;
-  gap: 1px;
-}
-
-.grid-cell {
-  width: 20px;
-  height: 20px;
-  border: 1px solid black;
-}
-
-.selected-box {
-  width: 20px;
-  height: 20px;
-}
-
-.selected-box::after {
-  content: "";
-  display: block;
-  width: 100%;
-  height: 100%;
-  background-color: var(--selected-color);
 }
 
 .color-selection {
@@ -89,74 +54,6 @@ body {
   height: 20px;
   margin: 0 5px;
   cursor: pointer;
-}
-
-.logo-container {
-  display: flex;
-  justify-content: center;
-  margin-bottom: 50px;
-}
-
-.logo-grid {
-  display: flex;
-  flex-wrap: wrap;
-}
-
-.letter {
-  width: 25px;
-  height: 25px;
-  margin-right: 5px;
-}
-
-.row {
-  display: flex;
-}
-
-.pixel {
-  width: 5px;
-  height: 5px;
-}
-
-.black {
-  background-color: transparent;
-}
-
-.white {
-  background-color: white;
-}
-
-.dotGothic16-regular {
-  font-family: "DotGothic16", sans-serif;
-  font-weight: 400;
-  font-style: normal;
-  font-size: 50px;
-}
-
-.target-image-section {
-  padding-top: 20px;
-  padding-bottom: 20px;
-  border: 1px solid #ccc;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-  margin-bottom: 40px;
-}
-
-.target-image-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding-bottom: 20px;
-}
-
-.target-image-container h2 {
-  font-weight: bold;
-  margin-bottom: 20px;
-}
-
-.target-image {
-  width: 200px;
-  height: auto;
-  margin: 0 auto;
 }
 
 .available-button {

@@ -86,7 +86,6 @@ function App() {
         r: selectedColor[0],
         g: selectedColor[1],
         b: selectedColor[2],
-        a: 255,
       },
     };
     put("/place-pixel", ev);

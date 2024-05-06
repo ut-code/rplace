@@ -112,9 +112,7 @@ function App() {
           setSelectedY((prevColumn) => Math.max(prevColumn - 1, 0));
           break;
         case "ArrowRight":
-          setSelectedY((prevColumn) =>
-            Math.min(prevColumn + 1, IMAGE_WIDTH - 1)
-          );
+          setSelectedX((x) => Math.min(x + 1, IMAGE_WIDTH - 1));
           break;
         default:
           break;

@@ -29,7 +29,7 @@ export function UpscaledImage({
   const arr = upscale(data, w, h, ratio);
   const withOverlayApplied = Uint8ClampedArray.from(arr);
   applyOverlay(withOverlayApplied, {
-    center: overlay.coord.map(n => n * ratio).map(s => s + ratio/2),
+    center: overlay.coord.map((n) => n * ratio).map((s) => s + ratio / 2),
     color: overlay.color,
     width: w * ratio,
     radius: Math.floor(ratio) / 2,

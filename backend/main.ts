@@ -55,10 +55,9 @@ const COOKIE_SAME_SITE_RESTRICTION =
   NODE_ENV === "development" ? "strict" : "strict";
 log(COOKIE_SAME_SITE_RESTRICTION);
 
+const client = new PrismaClient();
 const data = createRandomArray(IMAGE_WIDTH, IMAGE_HEIGHT);
 storeData(data);
-
-const client = new PrismaClient();
 
 app.get("/image", (_, res) => {
   res.send(JSON.stringify(data));
@@ -181,7 +180,12 @@ async function fetchData() {
       const result = await client.pixelColor.findUnique({
         where: { id: idNumber + 1, colIndex: colIndex, rowIndex: rowIndex },
       });
-      data.push(result.data[0], result.data[1], result.data[2], 255);
+      if (result !== null) {
+        data.push(result.data[0], result.data[1], result.data[2], 255);
+      } else {
+        log("failed to fetch pixel data");
+        return;
+      }
     }
   }
 }

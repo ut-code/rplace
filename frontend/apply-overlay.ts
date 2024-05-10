@@ -11,7 +11,11 @@ export function applyOverlay(
   for (let i = 0; i < data.length; i += 4) {
     const x = Math.floor(i / (width * 4));
     const y = (i % (width * 4)) / 4;
-    if (Math.abs(center[1] - x) < radius && Math.abs(center[0] - y) < radius) {
+    const alignedCenter = [center[0] - 0.5, center[1] - 0.5];
+    if (
+      Math.abs(alignedCenter[1] - x) <= radius &&
+      Math.abs(alignedCenter[0] - y) <= radius
+    ) {
       // do some extra blocking here
       if (
         Math.abs(alignedCenter[1] - x) + Math.abs(alignedCenter[0] - y) <

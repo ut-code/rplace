@@ -1,7 +1,6 @@
 import express from "express";
 import { Server } from "socket.io";
 import cors from "cors";
-import { PrismaClient } from "@prisma/client";
 import crypto from "node:crypto";
 import cookie from "cookie";
 import cookieParser from "cookie-parser";
@@ -137,41 +136,14 @@ async function onPlacePixelRequest(ev: PlacePixelRequest) {
   log(ev);
   placePixel(ev);
   // of() is for namespaces, and to() is for rooms
-<<<<<<< HEAD
-<<<<<<< HEAD
-  io.of("/").to("pixel-sync").emit("re-render", data);
-  await client.pixelColor.update({
-    where: { colIndex: ev.x, rowIndex: ev.y },
-=======
-  const newPixelColor = await client.pixelColor.create({
-    data: { data: JSON.stringify(data) },
-=======
   io.of("/").to("pixel-sync").emit("re-render", data);
   const idxNumber = ev.x + ev.y * IMAGE_WIDTH;
   await client.pixelColor.update({
-<<<<<<< HEAD
-    where: { colIndex: x, rowIndex: y },
-<<<<<<< HEAD
-    data: { data: JSON.stringify(data.slice(x + 16 * y, x + 16 * y + 2)) },
->>>>>>> bc7846f (connect database)
-=======
-=======
     where: { id: idxNumber + 1, colIndex: ev.x, rowIndex: ev.y },
->>>>>>> 0ac1933 (受け取ったデータをデータベースに保存して新規クライアントに渡せるようにしました)
     data: {
       data: data.slice(idxNumber * 4, idxNumber * 4 + 3),
     },
->>>>>>> 285e0d1 (made minor changes)
   });
-<<<<<<< HEAD
-  io.of("/").to("pixel-sync").emit("re-render", newPixelColor.data);
-  await client.pixelColor.update({
-    where: { colIndex: x, rowIndex: y },
->>>>>>> f945301 (make storing data possible)
-    data: { data: JSON.stringify(data.slice(x + 16 * y, x + 16 * y + 2)) },
-  });
-=======
->>>>>>> 0ac1933 (受け取ったデータをデータベースに保存して新規クライアントに渡せるようにしました)
 }
 
 /* request validation.

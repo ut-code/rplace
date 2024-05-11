@@ -1,10 +1,10 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import { socket } from "./socket.js";
 import { UpscaledImage } from "./zoom.tsx";
 import "./App.css";
+import rplaceLogo from "./assets/logo-art.png";
 
-const BACKEND_URL =
-  import.meta.env.VITE_API_ENDPOINT || "";
+const BACKEND_URL = import.meta.env.VITE_API_ENDPOINT || "";
 const BUTTON_COOLDOWN_PROD = 10; // this fallback is used in release, because on render build command cannot access environment variables
 const BUTTON_COOLDOWN_SECONDS =
   import.meta?.env?.VITE_BUTTON_COOLDOWN ?? BUTTON_COOLDOWN_PROD;
@@ -17,39 +17,20 @@ const PIXEL_SIZE = 16;
 
 type Color = number[];
 const colors: Color[] = [
-  [255, 255, 255], // white
-  [0, 255, 255],
-  [0, 0, 255],
-  [255, 0, 255],
-  [255, 0, 0],
-  [255, 255, 0],
-  [0, 255, 0],
-  [0, 0, 0], // black
+  [0, 0, 0],
+  [218, 56, 50],
+  [239, 133, 50],
+  [181, 228, 77],
+  [82, 180, 234],
+  [103, 53, 147],
+  [255, 255, 255],
 ];
 
 function App() {
   // const [imageSrc, setImageSrc] = useState<string | null>(null); // eslint says it's not used
-  const [gridColors, setGridColors] = useState<string[][]>([]);
   const [imageData, setImageData] = useState<Uint8ClampedArray>(() =>
     new Uint8ClampedArray(IMAGE_DATA_LEN).fill(0),
   );
-  useEffect(() => {
-    // Call setImageData to generate the image data
-
-    // Extract colors from the generated image data and update grid colors
-    const colors: string[][] = [];
-    for (let i = 0; i < IMAGE_HEIGHT; i++) {
-      const rowColors: string[] = [];
-      for (let j = 0; j < IMAGE_WIDTH; j++) {
-        const idx = (IMAGE_WIDTH * i + j) * 4;
-        const arr = imageData.slice(idx, idx + 4);
-        const color = `rgba(${arr[0]}, ${arr[1]}, ${arr[2]}, ${arr[3]})`;
-        rowColors.push(color);
-      }
-      colors.push(rowColors);
-    }
-    setGridColors(colors);
-  }, [imageData]);
 
   const [selectedX, setSelectedX] = useState<number>(0);
   const [selectedY, setSelectedY] = useState<number>(0);
@@ -86,7 +67,6 @@ function App() {
         r: selectedColor[0],
         g: selectedColor[1],
         b: selectedColor[2],
-        a: 255,
       },
     };
     put("/place-pixel", ev);
@@ -105,18 +85,16 @@ function App() {
     const handleKeyDown = (event: KeyboardEvent) => {
       switch (event.key) {
         case "ArrowUp":
-          setSelectedX((prevRow) => Math.max(prevRow - 1, 0));
+          setSelectedY((y) => Math.max(y - 1, 0));
           break;
         case "ArrowDown":
-          setSelectedX((prevRow) => Math.min(prevRow + 1, IMAGE_HEIGHT - 1));
+          setSelectedY((y) => Math.min(y + 1, IMAGE_HEIGHT - 1));
           break;
         case "ArrowLeft":
-          setSelectedY((prevColumn) => Math.max(prevColumn - 1, 0));
+          setSelectedX((x) => Math.max(x - 1, 0));
           break;
         case "ArrowRight":
-          setSelectedY((prevColumn) =>
-            Math.min(prevColumn + 1, IMAGE_WIDTH - 1),
-          );
+          setSelectedX((x) => Math.min(x + 1, IMAGE_WIDTH - 1));
           break;
         default:
           break;
@@ -132,7 +110,6 @@ function App() {
 
   const handleColorSelection = (color: Color) => {
     setSelectedColor(color);
-    console.log("Selected color:", color);
   };
 
   function onImageClick(ev: React.MouseEvent): void {
@@ -145,7 +122,10 @@ function App() {
 
   return (
     <>
-      <h1>r/place</h1>
+      <div className="header">
+        <img src={rplaceLogo} className="logo" alt="logo" />
+      </div>
+
       <UpscaledImage
         data={imageData}
         w={IMAGE_WIDTH}
@@ -157,9 +137,10 @@ function App() {
           color: selectedColor,
         }}
       />
+
       <div className="grid-container">
         <div className="selection-section">
-              {`X: ${selectedX}, Y: ${selectedY}`}
+          {`X: ${selectedX}, Y: ${selectedY}`}
         </div>
       </div>
       <div className="color-selection">
@@ -173,9 +154,21 @@ function App() {
         ))}
       </div>
       {clickCD <= 0 ? (
-        <button onClick={handlePlace}>Place!!!</button>
+        <div className="available-button-section">
+          <button className="available-button" onClick={handlePlace}>
+            Place!!!
+          </button>
+          <p>&nbsp;</p>
+        </div>
       ) : (
-        <div>PLEASE WAIT {clickCD} SECONDS BEFOR CLIK</div>
+        <div className="unavailable-button-section">
+          <div className="unavailable-button">
+            <button className="gray-out-button" disabled>
+              Place!!!
+            </button>
+          </div>
+          <p>PLEASE WAIT {clickCD} SECONDS BEFORE CLICK</p>
+        </div>
       )}
     </>
   );
@@ -196,15 +189,11 @@ function hex(n: number): string {
 }
 
 async function get(path: string) {
-  if (BACKEND_URL) {
-    return await fetch(BACKEND_URL + path).then((res) => res.json());
-  }
-  return fetch(path).then((res) => res.json());
+  return fetch(BACKEND_URL + path).then((res) => res.json());
 }
 
-// PUT doesn't return anything.
 function put<T>(path: string, data: T) {
-  fetch(path, {
+  fetch(BACKEND_URL + path, {
     headers: {
       "Content-Type": "application/json",
     },

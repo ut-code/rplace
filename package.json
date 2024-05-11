@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "start": "npm run backend:dev & npm run frontend:dev",
+    "start": "npm run release # npm run backend:dev & npm run frontend:dev",
     "release": "npm run build && npm run serve",
     "test": "npm run precommit && npm run release",
     "frontend:dev": "npx vite",

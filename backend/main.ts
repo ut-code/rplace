@@ -46,7 +46,7 @@ const io = new Server(httpServer, {
   cookie: true,
 });
 
-const BUTTON_COOLDOWN_SECONDS = VITE_BUTTON_COOLDOWN || 10; // the fallback will be used in prod
+const BUTTON_COOLDOWN_SECONDS = parseInt(VITE_BUTTON_COOLDOWN || "10"); // the fallback will be used in prod
 const IMAGE_WIDTH = 16;
 const IMAGE_HEIGHT = 16;
 const DATA_LEN = IMAGE_HEIGHT * IMAGE_WIDTH * 4;
@@ -67,7 +67,6 @@ type PlacePixelRequest = {
     r: number;
     g: number;
     b: number;
-    a: number;
   };
 };
 
@@ -88,27 +87,24 @@ function placePixel(ev: PlacePixelRequest) {
     color.r < 0 ||
     color.g < 0 ||
     color.b < 0 ||
-    color.a < 0 ||
     color.r > 255 ||
     color.g > 255 ||
-    color.b > 255 ||
-    color.a > 255
+    color.b > 255
   ) {
     log(`Invalid RGBA value found. rgba: {
       r: ${color.r}
       g: ${color.g}
       b: ${color.b}
-      a: ${color.a}
     }`);
     return;
   }
   if (
-    [color.r, color.g, color.b, color.a]
+    [color.r, color.g, color.b]
       .map((n) => Number.isInteger(n))
       .some((b: boolean) => !b)
   ) {
     log(
-      `some value is not integer. r: ${color.r}, g: ${color.g}, b: ${color.b}, a: ${color.a}`,
+      `some value is not integer. r: ${color.r}, g: ${color.g}, b: ${color.b}`,
     );
     return;
   }
@@ -116,8 +112,7 @@ function placePixel(ev: PlacePixelRequest) {
   data[first_idx] = color.r;
   data[first_idx + 1] = color.g;
   data[first_idx + 2] = color.b;
-  // maybe A should be always 255? idk
-  data[first_idx + 3] = color.a;
+  data[first_idx + 3] = 255;
 }
 /*
 namespaces:

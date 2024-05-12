@@ -38,6 +38,8 @@ docker compose build --no-cache
 docker compose up
 ```
 
+. service will be available on localhost:3200.
+
 run `docker exec -it (docker name - use docker ps to check) sh` to enter interactive shell within the docker container.
 
 example: `docker exec -it uplace-uplace-1 sh`

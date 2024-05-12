@@ -28,6 +28,20 @@ npm run backend:dev
 
 in two separate process
 
+## Docker
+
+because prisma won't work on NixOS, I created docker files s.t. it works on any machine (even on Windows, if set up properly).
+to run docker, just run
+
+```sh
+docker compose build --no-cache
+docker compose up
+```
+
+run `docker exec -it (docker name - use docker ps to check) sh` to enter interactive shell within the docker container.
+
+example: `docker exec -it uplace-uplace-1 sh`
+
 ## Before commit / making PR
 
 run `npm test` and make sure that it's running

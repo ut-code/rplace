@@ -203,7 +203,6 @@ app.put("/place-pixel", (req, res) => {
     log("Blocked a request: cookie not found");
     return;
   }
-  log(req.cookies);
   const deviceId = req.cookies["device-id"];
   if (!deviceId) {
     res.status(400).send("Bad Request: cookie `device-id` not found");

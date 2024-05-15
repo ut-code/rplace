@@ -57,7 +57,12 @@ log(COOKIE_SAME_SITE_RESTRICTION);
 
 const client = new PrismaClient();
 const data = createRandomArray(IMAGE_WIDTH, IMAGE_HEIGHT);
-storeData(data);
+const existingData = await client.pixelColor.findFirst();
+if (!existingData) {
+  storeData(data);
+} else {
+  log("Data already exists. Skipping initialization.");
+}
 
 app.get("/image", (_, res) => {
   res.send(JSON.stringify(data));
@@ -107,7 +112,7 @@ function placePixel(ev: PlacePixelRequest) {
       .some((b: boolean) => !b)
   ) {
     log(
-      `some value is not integer. r: ${color.r}, g: ${color.g}, b: ${color.b}`,
+      `some value is not integer. r: ${color.r}, g: ${color.g}, b: ${color.b}`
     );
     return;
   }

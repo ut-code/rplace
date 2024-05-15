@@ -32,7 +32,7 @@ function App() {
 
   const [selectedX, setSelectedX] = useState<number>(0);
   const [selectedY, setSelectedY] = useState<number>(0);
-  const [selectedColor, setSelectedColor] = useState<Color>([255, 255, 255]);
+  const [selectedColor, setSelectedColor] = useState<Color>(colors[0]);
 
   // backend integration (with Cross-Origin Resource Share) example.
   function fetchImage() {

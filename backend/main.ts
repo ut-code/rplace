@@ -64,8 +64,9 @@ if (!existingData) {
   log("Data already exists. Skipping initialization.");
 }
 
-app.get("/image", (_, res) => {
-  res.send(JSON.stringify(data));
+app.get("/image", async (_, res) => {
+  const dataArray = await fetchData();
+  res.send(JSON.stringify(dataArray));
 });
 
 type PlacePixelRequest = {
@@ -193,13 +194,14 @@ async function fetchData() {
       }
     }
   }
+  return data;
 }
 // socket events need to be registered inside here.
 // on connection is one of the few exceptions. (i don't know other exceptions though)
-io.on("connection", (socket) => {
+io.on("connection", async (socket) => {
   socket.join("pixel-sync");
-  fetchData();
-  socket.emit("data", data);
+  const dataArray = await fetchData();
+  socket.emit("data", dataArray);
 });
 
 // since io.on("connection") cannot give cookies, we need to use io.engine.on("initial_headers"). think this as the same as io.on("connection") with some lower level control

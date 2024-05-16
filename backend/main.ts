@@ -147,9 +147,8 @@ async function onPlacePixelRequest(ev: PlacePixelRequest) {
       data: data.slice(idxNumber * 4, idxNumber * 4 + 3),
     },
   });
-  const dataArray = await fetchData();
   // of() is for namespaces, and to() is for rooms
-  io.of("/").to("pixel-sync").emit("re-render", dataArray);
+  io.of("/").to("pixel-sync").emit("re-render", data);
 }
 
 /* request validation.

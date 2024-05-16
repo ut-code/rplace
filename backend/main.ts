@@ -140,8 +140,6 @@ async function onPlacePixelRequest(ev: PlacePixelRequest) {
   log("socket event 'place-pixel' received.");
   log(ev);
   placePixel(ev);
-  // of() is for namespaces, and to() is for rooms
-  io.of("/").to("pixel-sync").emit("re-render", data);
   const idxNumber = ev.x + ev.y * IMAGE_WIDTH;
   await client.pixelColor.update({
     where: { id: idxNumber + 1, colIndex: ev.x, rowIndex: ev.y },
@@ -149,6 +147,9 @@ async function onPlacePixelRequest(ev: PlacePixelRequest) {
       data: data.slice(idxNumber * 4, idxNumber * 4 + 3),
     },
   });
+  const dataArray = await fetchData();
+  // of() is for namespaces, and to() is for rooms
+  io.of("/").to("pixel-sync").emit("re-render", dataArray);
 }
 
 /* request validation.

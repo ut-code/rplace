@@ -29,7 +29,7 @@ const colors: Color[] = [
 function App() {
   // const [imageSrc, setImageSrc] = useState<string | null>(null); // eslint says it's not used
   const [imageData, setImageData] = useState<Uint8ClampedArray>(() =>
-    new Uint8ClampedArray(IMAGE_DATA_LEN).fill(0),
+    new Uint8ClampedArray(IMAGE_DATA_LEN).fill(0)
   );
 
   const [selectedX, setSelectedX] = useState<number>(0);
@@ -44,7 +44,7 @@ function App() {
   // useEffect(_, []); will run on each load/reload (careful: without second arg, it would run whenever any existing variable changes)
   useEffect(() => {
     fetchImage();
-  }, []);
+  }, [imageData]);
 
   function onReRender(data: number[]) {
     // TODO!

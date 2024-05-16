@@ -178,24 +178,6 @@ setTimeout(
   5 * 60 * 1000
 );
 
-async function fetchData() {
-  const data: number[] = [];
-  for (let rowIndex = 0; rowIndex < IMAGE_HEIGHT; rowIndex++) {
-    for (let colIndex = 0; colIndex < IMAGE_WIDTH; colIndex++) {
-      const idNumber = rowIndex * IMAGE_WIDTH + colIndex;
-      const result = await client.pixelColor.findUnique({
-        where: { id: idNumber + 1, colIndex: colIndex, rowIndex: rowIndex },
-      });
-      if (result !== null) {
-        data.push(result.data[0], result.data[1], result.data[2], 255);
-      } else {
-        log("failed to fetch pixel data");
-        return;
-      }
-    }
-  }
-  return data;
-}
 // socket events need to be registered inside here.
 // on connection is one of the few exceptions. (i don't know other exceptions though)
 io.on("connection", async (socket) => {
@@ -310,4 +292,23 @@ async function storeData(defaultArray: number[]) {
         },
       });
     }
+}
+
+async function fetchData() {
+  const data: number[] = [];
+  for (let rowIndex = 0; rowIndex < IMAGE_HEIGHT; rowIndex++) {
+    for (let colIndex = 0; colIndex < IMAGE_WIDTH; colIndex++) {
+      const idNumber = rowIndex * IMAGE_WIDTH + colIndex;
+      const result = await client.pixelColor.findUnique({
+        where: { id: idNumber + 1, colIndex: colIndex, rowIndex: rowIndex },
+      });
+      if (result !== null) {
+        data.push(result.data[0], result.data[1], result.data[2], 255);
+      } else {
+        log("failed to fetch pixel data");
+        return;
+      }
+    }
+  }
+  return data;
 }

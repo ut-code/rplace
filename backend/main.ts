@@ -56,7 +56,28 @@ const COOKIE_SAME_SITE_RESTRICTION =
 log(COOKIE_SAME_SITE_RESTRICTION);
 
 const client = new PrismaClient();
+
+/* async function storeDefaultData() {
+  for (let rowIndex = 0; rowIndex < IMAGE_HEIGHT; rowIndex++)
+    for (let colIndex = 0; colIndex < IMAGE_WIDTH; colIndex++) {
+      const idx = rowIndex * IMAGE_WIDTH + colIndex;
+      await client.pixelColor.update({
+        where: { id: idx + 1, rowIndex: rowIndex, colIndex: colIndex },
+        data: {
+          rowIndex: rowIndex,
+          colIndex: colIndex,
+          data: [255, 255, 255],
+        },
+      });
+    }
+}
+
+storeDefaultData2();*/
+
 const data = new Array(DATA_LEN).fill(255);
+
+// const data = await fetchData();
+
 const existingData = await client.pixelColor.findFirst();
 if (!existingData) {
   storeData(data);

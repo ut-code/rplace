@@ -1,0 +1,19 @@
+name: Keep Alive
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+
+jobs:
+  keep-alive:
+    name: Keep Alive
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install cURL
+        run: sudo apt install curl
+        shell: bash
+
+      - name: Access to Render
+        run: curl --silent --show-error https://u-place.onrender.com
+        shell: bash

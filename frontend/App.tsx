@@ -42,7 +42,7 @@ function App() {
   // useEffect(_, []); will run on each load/reload (careful: without second arg, it would run whenever any existing variable changes)
   useEffect(() => {
     fetchImage();
-  }, [imageData]);
+  }, []);
 
   function onReRender(data: number[]) {
     setImageData(Uint8ClampedArray.from(data));

@@ -183,8 +183,6 @@ setTimeout(
 // on connection is one of the few exceptions. (i don't know other exceptions though)
 io.on("connection", async (socket) => {
   socket.join("pixel-sync");
-  const dataArray = await fetchData();
-  socket.emit("data", dataArray);
 });
 
 // since io.on("connection") cannot give cookies, we need to use io.engine.on("initial_headers"). think this as the same as io.on("connection") with some lower level control

@@ -50,13 +50,13 @@ const io = new Server(httpServer, {
 const BUTTON_COOLDOWN_SECONDS = parseInt(VITE_BUTTON_COOLDOWN || "10"); // the fallback will be used in prod
 const IMAGE_WIDTH = 16;
 const IMAGE_HEIGHT = 16;
-// const DATA_LEN = IMAGE_HEIGHT * IMAGE_WIDTH * 4;
+const DATA_LEN = IMAGE_HEIGHT * IMAGE_WIDTH * 4;
 const COOKIE_SAME_SITE_RESTRICTION =
   NODE_ENV === "development" ? "strict" : "strict";
 log(COOKIE_SAME_SITE_RESTRICTION);
 
 const client = new PrismaClient();
-const data = createRandomArray(IMAGE_WIDTH, IMAGE_HEIGHT);
+const data = new Array(DATA_LEN).fill(255);
 const existingData = await client.pixelColor.findFirst();
 if (!existingData) {
   storeData(data);
@@ -222,7 +222,6 @@ app.put("/place-pixel", (req, res) => {
     log("Blocked a request: cookie not found");
     return;
   }
-  log(req.cookies);
   const deviceId = req.cookies["device-id"];
   if (!deviceId) {
     res.status(400).send("Bad Request: cookie `device-id` not found");
@@ -266,20 +265,6 @@ app.put("/place-pixel", (req, res) => {
   res.status(202).send("ok"); // since websocket will do the actual work, we just send status 202: Accepted
   log("Accepted a request: placed one pixel");
 });
-
-function createRandomArray(width: number, height: number) {
-  const arr = new Uint8ClampedArray(width * height * 4);
-  for (let h = 0; h < height; h++) {
-    for (let w = 0; w < width; w++) {
-      const idx = (h * width + w) * 4;
-      arr[idx] = (16 * w) % 256; // Red
-      arr[idx + 1] = (16 * h) % 256; // Green
-      arr[idx + 2] = (16 * idx) % 256; // Blue
-      arr[idx + 3] = 255; // Alpha (transparency)
-    }
-  }
-  return Array.from(arr);
-}
 
 async function storeData(defaultArray: number[]) {
   for (let rowIndex = 0; rowIndex < IMAGE_HEIGHT; rowIndex++)

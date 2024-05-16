@@ -8,8 +8,6 @@ const BACKEND_URL = import.meta.env.VITE_API_ENDPOINT || "";
 const BUTTON_COOLDOWN_PROD = 10; // this fallback is used in release, because on render build command cannot access environment variables
 const BUTTON_COOLDOWN_SECONDS =
   import.meta?.env?.VITE_BUTTON_COOLDOWN ?? BUTTON_COOLDOWN_PROD;
-console.log(BUTTON_COOLDOWN_SECONDS);
-console.log(import.meta.env.VITE_BUTTON_COOLDOWN);
 const IMAGE_HEIGHT = 16;
 const IMAGE_WIDTH = 16;
 const IMAGE_DATA_LEN = IMAGE_HEIGHT * IMAGE_WIDTH * 4;
@@ -34,7 +32,7 @@ function App() {
 
   const [selectedX, setSelectedX] = useState<number>(0);
   const [selectedY, setSelectedY] = useState<number>(0);
-  const [selectedColor, setSelectedColor] = useState<Color>([255, 255, 255]);
+  const [selectedColor, setSelectedColor] = useState<Color>(colors[0]);
 
   // backend integration (with Cross-Origin Resource Share) example.
   function fetchImage() {
@@ -47,10 +45,7 @@ function App() {
   }, [imageData]);
 
   function onReRender(data: number[]) {
-    // TODO!
-    console.log("rerender", data.length);
     setImageData(Uint8ClampedArray.from(data));
-    console.log("re-render request received!");
   }
 
   const [clickCD, setClickCD] = useState<number>(BUTTON_COOLDOWN_SECONDS);

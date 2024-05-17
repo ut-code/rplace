@@ -301,32 +301,38 @@ app.put("/place-pixel", (req, res) => {
 });
 
 async function createNewRecord(defaultArray: number[]) {
-  for (let rowIndex = 0; rowIndex < IMAGE_HEIGHT; rowIndex++)
+  const ps = new Array<Promise<unknown>>();
+  for (let rowIndex = 0; rowIndex < IMAGE_HEIGHT; rowIndex++) {
     for (let colIndex = 0; colIndex < IMAGE_WIDTH; colIndex++) {
       const idx = (rowIndex * IMAGE_WIDTH + colIndex) * 4;
-      await client.pixelColor.create({
+      ps.push(client.pixelColor.create({
         data: {
           rowIndex: rowIndex,
           colIndex: colIndex,
           data: defaultArray.slice(idx, idx + 3),
         },
-      });
+      }));
     }
+  }
+  return await Promise.all(ps);
 }
 
 async function updateDatabaseTo(array: number[]) {
-  for (let rowIndex = 0; rowIndex < IMAGE_HEIGHT; rowIndex++)
+  const ps = new Array<Promise<unknown>>();
+  for (let rowIndex = 0; rowIndex < IMAGE_HEIGHT; rowIndex++) {
     for (let colIndex = 0; colIndex < IMAGE_WIDTH; colIndex++) {
       const idx = rowIndex * IMAGE_WIDTH + colIndex;
-      await client.pixelColor.updateMany({
+      ps.push(client.pixelColor.updateMany({
         where: { rowIndex: rowIndex, colIndex: colIndex },
         data: {
           rowIndex: rowIndex,
           colIndex: colIndex,
           data: array.slice(idx * 4, idx * 4 + 3),
         },
-      });
+      }));
     }
+  }
+  return await Promise.all(ps);
 }
 
 async function fetchData() {

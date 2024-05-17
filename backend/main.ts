@@ -5,6 +5,7 @@ import crypto from "node:crypto";
 import cookie from "cookie";
 import cookieParser from "cookie-parser";
 import { PrismaClient } from "@prisma/client";
+import { sha256 } from "js-sha256/index.js";
 
 import { VITE_BUTTON_COOLDOWN, NODE_ENV, WEB_ORIGIN } from "./env.js";
 
@@ -235,6 +236,33 @@ io.engine.on("initial_headers", (headers, request) => {
 
   return;
 });
+
+app.post("/reset-palette", (req, res) => {
+  log(req.query.color);
+  log(req.query.secretKey);
+  if (typeof req.query.color !== "string" || typeof req.query.secretKey !== "string") {
+    res.status(400).send("bad request: color or key not found in query");
+    return;
+  }
+  const color = req.query.color.repeat(3).split(",").slice(3);
+  if (color.length < 3) {
+    res.status(400).send("bad request: color not found in query??")
+    return;
+  }
+  color.push("255");
+  const hash = "e61b574939c12ed6bb1b0b43afe497fc57b89ff1ab66c12c1accd326523ca228";
+  if (sha256.hex(req.query.secretKey) === hash) {
+    const data = color.join(",").repeat(DATA_LEN/4).split(",");
+    if (data.some(p => p == null)) return;
+    // reset palette
+    console.log("success!");
+    res.send("success!");
+  } else {
+    log("wrong hash");
+    res.send("wrong guess; try again");
+  }
+  return;
+})
 
 app.put("/place-pixel", (req, res) => {
   if (!req.cookies) {

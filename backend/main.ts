@@ -136,7 +136,7 @@ function placePixel(ev: PlacePixelRequest) {
       .some((b: boolean) => !b)
   ) {
     log(
-      `some value is not integer. r: ${color.r}, g: ${color.g}, b: ${color.b}`
+      `some value is not integer. r: ${color.r}, g: ${color.g}, b: ${color.b}`,
     );
     return;
   }
@@ -163,6 +163,8 @@ async function onPlacePixelRequest(ev: PlacePixelRequest) {
   log("socket event 'place-pixel' received.");
   log(ev);
   placePixel(ev);
+  // of() is for namespaces, and to() is for rooms
+  io.of("/").to("pixel-sync").emit("re-render", data);
   const idxNumber = ev.x + ev.y * IMAGE_WIDTH;
   await client.pixelColor.update({
     where: { id: idxNumber + 1, colIndex: ev.x, rowIndex: ev.y },
@@ -170,8 +172,6 @@ async function onPlacePixelRequest(ev: PlacePixelRequest) {
       data: data.slice(idxNumber * 4, idxNumber * 4 + 3),
     },
   });
-  // of() is for namespaces, and to() is for rooms
-  io.of("/").to("pixel-sync").emit("re-render", data);
 }
 
 /* request validation.
@@ -198,7 +198,7 @@ setTimeout(
       idLastWrittenMap.clear();
     }
   },
-  5 * 60 * 1000
+  5 * 60 * 1000,
 );
 
 // socket events need to be registered inside here.
@@ -265,7 +265,7 @@ app.put("/place-pixel", (req, res) => {
     res
       .status(400)
       .send(
-        `Bad Request: Last written time recorded in the server is less than ${BUTTON_COOLDOWN_SECONDS} seconds ago.`
+        `Bad Request: Last written time recorded in the server is less than ${BUTTON_COOLDOWN_SECONDS} seconds ago.`,
       );
     log("Blocked a request: request too often");
     return;

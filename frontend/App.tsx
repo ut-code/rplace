@@ -16,10 +16,13 @@ const PIXEL_SIZE = 16;
 type Color = number[];
 const colors: Color[] = [
   [0, 0, 0],
+  [234, 145, 152],
   [218, 56, 50],
   [239, 133, 50],
+  [255, 255, 0],
   [181, 228, 77],
   [82, 180, 234],
+  [35, 59, 108],
   [103, 53, 147],
   [255, 255, 255],
 ];
@@ -133,11 +136,6 @@ function App() {
         }}
       />
 
-      <div className="grid-container">
-        <div className="selection-section">
-          {`X: ${selectedX}, Y: ${selectedY}`}
-        </div>
-      </div>
       <div className="color-selection">
         {colors.map((color, index) => (
           <div
@@ -151,18 +149,22 @@ function App() {
       {clickCD <= 0 ? (
         <div className="available-button-section">
           <button className="available-button" onClick={handlePlace}>
-            Place!!!
+            Place Pixel
           </button>
-          <p>&nbsp;</p>
         </div>
       ) : (
         <div className="unavailable-button-section">
           <div className="unavailable-button">
-            <button className="gray-out-button" disabled>
-              Place!!!
+            <button
+              className="gray-out-button"
+              style={{
+                "--progress-width": `${((BUTTON_COOLDOWN_SECONDS - clickCD) * 100) / 9}%`,
+              }} // Adjust the progress width dynamically
+              disabled
+            >
+              Place Pixel
             </button>
           </div>
-          <p>PLEASE WAIT {clickCD} SECONDS BEFORE CLICK</p>
         </div>
       )}
     </>

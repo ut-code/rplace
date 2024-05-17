@@ -4,6 +4,7 @@ import cors from "cors";
 import crypto from "node:crypto";
 import cookie from "cookie";
 import cookieParser from "cookie-parser";
+import { PrismaClient } from "@prisma/client";
 
 import { VITE_BUTTON_COOLDOWN, NODE_ENV, WEB_ORIGIN } from "./env.js";
 
@@ -54,10 +55,41 @@ const COOKIE_SAME_SITE_RESTRICTION =
   NODE_ENV === "development" ? "strict" : "strict";
 log(COOKIE_SAME_SITE_RESTRICTION);
 
-const data = new Array(DATA_LEN).fill(255);
+const client = new PrismaClient();
 
-app.get("/image", (_, res) => {
-  res.send(JSON.stringify(data));
+/* async function storeDefaultData() {
+  for (let rowIndex = 0; rowIndex < IMAGE_HEIGHT; rowIndex++)
+    for (let colIndex = 0; colIndex < IMAGE_WIDTH; colIndex++) {
+      const idx = rowIndex * IMAGE_WIDTH + colIndex;
+      await client.pixelColor.update({
+        where: { id: idx + 1, rowIndex: rowIndex, colIndex: colIndex },
+        data: {
+          rowIndex: rowIndex,
+          colIndex: colIndex,
+          data: [255, 255, 255],
+        },
+      });
+    }
+}
+
+storeDefaultData2();*/
+
+let temporaryData: number[];
+
+const existingData = await client.pixelColor.findFirst();
+if (!existingData) {
+  temporaryData = new Array(DATA_LEN).fill(255);
+  storeData(temporaryData);
+} else {
+  log("Data already exists. Skipping initialization.");
+  temporaryData = await fetchData()!;
+}
+
+const data = temporaryData;
+
+app.get("/image", async (_, res) => {
+  const dataArray = await fetchData();
+  res.send(JSON.stringify(dataArray));
 });
 
 type PlacePixelRequest = {
@@ -127,12 +159,19 @@ events:
 - "re-render" : server -> client, re-renders the entire canvas (contains all pixels data)
 */
 
-function onPlacePixelRequest(ev: PlacePixelRequest) {
+async function onPlacePixelRequest(ev: PlacePixelRequest) {
   log("socket event 'place-pixel' received.");
   log(ev);
   placePixel(ev);
   // of() is for namespaces, and to() is for rooms
   io.of("/").to("pixel-sync").emit("re-render", data);
+  const idxNumber = ev.x + ev.y * IMAGE_WIDTH;
+  await client.pixelColor.update({
+    where: { id: idxNumber + 1, colIndex: ev.x, rowIndex: ev.y },
+    data: {
+      data: data.slice(idxNumber * 4, idxNumber * 4 + 3),
+    },
+  });
 }
 
 /* request validation.
@@ -164,7 +203,7 @@ setTimeout(
 
 // socket events need to be registered inside here.
 // on connection is one of the few exceptions. (i don't know other exceptions though)
-io.on("connection", (socket) => {
+io.on("connection", async (socket) => {
   socket.join("pixel-sync");
 });
 
@@ -246,3 +285,36 @@ app.put("/place-pixel", (req, res) => {
   res.status(202).send("ok"); // since websocket will do the actual work, we just send status 202: Accepted
   log("Accepted a request: placed one pixel");
 });
+
+async function storeData(defaultArray: number[]) {
+  for (let rowIndex = 0; rowIndex < IMAGE_HEIGHT; rowIndex++)
+    for (let colIndex = 0; colIndex < IMAGE_WIDTH; colIndex++) {
+      const idx = (rowIndex * IMAGE_WIDTH + colIndex) * 4;
+      await client.pixelColor.create({
+        data: {
+          rowIndex: rowIndex,
+          colIndex: colIndex,
+          data: defaultArray.slice(idx, idx + 3),
+        },
+      });
+    }
+}
+
+async function fetchData() {
+  const data: number[] = [];
+  for (let rowIndex = 0; rowIndex < IMAGE_HEIGHT; rowIndex++) {
+    for (let colIndex = 0; colIndex < IMAGE_WIDTH; colIndex++) {
+      const idNumber = rowIndex * IMAGE_WIDTH + colIndex;
+      const result = await client.pixelColor.findUnique({
+        where: { id: idNumber + 1, colIndex: colIndex, rowIndex: rowIndex },
+      });
+      if (result !== null) {
+        data.push(result.data[0], result.data[1], result.data[2], 255);
+      } else {
+        log("failed to fetch pixel data");
+        throw new Error();
+      }
+    }
+  }
+  return data;
+}

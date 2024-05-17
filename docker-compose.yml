@@ -1,0 +1,18 @@
+services:
+  psql:
+    build:
+      context: ./postgresql
+      dockerfile: ./Dockerfile
+    environment:
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=database
+  uplace:
+    restart: always # used to test database
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    ports:
+      - "3200:3200"
+    depends_on:
+      - psql

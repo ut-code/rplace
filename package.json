@@ -21,6 +21,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@prisma/client": "^5.13.0",
     "@types/cors": "^2.8.17",
     "cookie": "^0.6.0",
     "cookie-parser": "^1.4.6",
@@ -46,6 +47,7 @@
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.5",
     "prettier": "^3.2.5",
+    "prisma": "^5.13.0",
     "typescript": "^5.2.2",
     "vite": "^5.1.0"
   }

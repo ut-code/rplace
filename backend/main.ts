@@ -16,9 +16,9 @@ if (doLogging) {
 
 const log = doLogging
   ? (...x: any[]) => {
-    console.log(...x);
-  }
-  : () => { };
+      console.log(...x);
+    }
+  : () => {};
 
 const app = express();
 
@@ -221,14 +221,18 @@ io.engine.on("initial_headers", (headers, request) => {
 });
 
 app.post("/reset-palette", async (req, res) => {
-  if (typeof req.query.color !== "string" || typeof req.query.secretKey !== "string") {
+  if (
+    typeof req.query.color !== "string" ||
+    typeof req.query.secretKey !== "string"
+  ) {
     res.status(400).send("bad request: color or key not found in query");
     return;
   }
   const colorString = req.query.color.repeat(3).split(",").slice(3);
   const color = colorString.map((s) => parseInt(s));
 
-  const hash = "e61b574939c12ed6bb1b0b43afe497fc57b89ff1ab66c12c1accd326523ca228";
+  const hash =
+    "e61b574939c12ed6bb1b0b43afe497fc57b89ff1ab66c12c1accd326523ca228";
   if (sha256.hex(req.query.secretKey) !== hash) {
     log("wrong hash");
     res.send("wrong guess; try again");
@@ -305,13 +309,15 @@ async function createNewRecord(defaultArray: number[]) {
   for (let rowIndex = 0; rowIndex < IMAGE_HEIGHT; rowIndex++) {
     for (let colIndex = 0; colIndex < IMAGE_WIDTH; colIndex++) {
       const idx = (rowIndex * IMAGE_WIDTH + colIndex) * 4;
-      ps.push(client.pixelColor.create({
-        data: {
-          rowIndex: rowIndex,
-          colIndex: colIndex,
-          data: defaultArray.slice(idx, idx + 3),
-        },
-      }));
+      ps.push(
+        client.pixelColor.create({
+          data: {
+            rowIndex: rowIndex,
+            colIndex: colIndex,
+            data: defaultArray.slice(idx, idx + 3),
+          },
+        }),
+      );
     }
   }
   return await Promise.all(ps);
@@ -322,14 +328,16 @@ async function updateDatabaseTo(array: number[]) {
   for (let rowIndex = 0; rowIndex < IMAGE_HEIGHT; rowIndex++) {
     for (let colIndex = 0; colIndex < IMAGE_WIDTH; colIndex++) {
       const idx = rowIndex * IMAGE_WIDTH + colIndex;
-      ps.push(client.pixelColor.updateMany({
-        where: { rowIndex: rowIndex, colIndex: colIndex },
-        data: {
-          rowIndex: rowIndex,
-          colIndex: colIndex,
-          data: array.slice(idx * 4, idx * 4 + 3),
-        },
-      }));
+      ps.push(
+        client.pixelColor.updateMany({
+          where: { rowIndex: rowIndex, colIndex: colIndex },
+          data: {
+            rowIndex: rowIndex,
+            colIndex: colIndex,
+            data: array.slice(idx * 4, idx * 4 + 3),
+          },
+        }),
+      );
     }
   }
   return await Promise.all(ps);

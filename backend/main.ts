@@ -74,16 +74,18 @@ const client = new PrismaClient();
 
 storeDefaultData2();*/
 
-const data = new Array(DATA_LEN).fill(255);
-
-// const data = await fetchData();
+let temporaryData: number[];
 
 const existingData = await client.pixelColor.findFirst();
 if (!existingData) {
-  storeData(data);
+  temporaryData = new Array(DATA_LEN).fill(255);
+  storeData(temporaryData);
 } else {
   log("Data already exists. Skipping initialization.");
+  temporaryData = await fetchData()!;
 }
+
+const data = temporaryData;
 
 app.get("/image", async (_, res) => {
   const dataArray = await fetchData();
@@ -134,7 +136,7 @@ function placePixel(ev: PlacePixelRequest) {
       .some((b: boolean) => !b)
   ) {
     log(
-      `some value is not integer. r: ${color.r}, g: ${color.g}, b: ${color.b}`,
+      `some value is not integer. r: ${color.r}, g: ${color.g}, b: ${color.b}`
     );
     return;
   }
@@ -196,7 +198,7 @@ setTimeout(
       idLastWrittenMap.clear();
     }
   },
-  5 * 60 * 1000,
+  5 * 60 * 1000
 );
 
 // socket events need to be registered inside here.
@@ -263,7 +265,7 @@ app.put("/place-pixel", (req, res) => {
     res
       .status(400)
       .send(
-        `Bad Request: Last written time recorded in the server is less than ${BUTTON_COOLDOWN_SECONDS} seconds ago.`,
+        `Bad Request: Last written time recorded in the server is less than ${BUTTON_COOLDOWN_SECONDS} seconds ago.`
       );
     log("Blocked a request: request too often");
     return;
@@ -310,7 +312,7 @@ async function fetchData() {
         data.push(result.data[0], result.data[1], result.data[2], 255);
       } else {
         log("failed to fetch pixel data");
-        return;
+        throw new Error();
       }
     }
   }

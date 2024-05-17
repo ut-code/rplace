@@ -5,7 +5,7 @@ import crypto from "node:crypto";
 import cookie from "cookie";
 import cookieParser from "cookie-parser";
 import { PrismaClient } from "@prisma/client";
-import { sha256 } from "js-sha256/index.js";
+import { sha256 } from "js-sha256";
 
 import { VITE_BUTTON_COOLDOWN, NODE_ENV, WEB_ORIGIN } from "./env.js";
 
@@ -16,9 +16,9 @@ if (doLogging) {
 
 const log = doLogging
   ? (...x: any[]) => {
-      console.log(...x);
-    }
-  : () => {};
+    console.log(...x);
+  }
+  : () => { };
 
 const app = express();
 
@@ -58,29 +58,13 @@ log(COOKIE_SAME_SITE_RESTRICTION);
 
 const client = new PrismaClient();
 
-/* async function storeDefaultData() {
-  for (let rowIndex = 0; rowIndex < IMAGE_HEIGHT; rowIndex++)
-    for (let colIndex = 0; colIndex < IMAGE_WIDTH; colIndex++) {
-      const idx = rowIndex * IMAGE_WIDTH + colIndex;
-      await client.pixelColor.update({
-        where: { id: idx + 1, rowIndex: rowIndex, colIndex: colIndex },
-        data: {
-          rowIndex: rowIndex,
-          colIndex: colIndex,
-          data: [255, 255, 255],
-        },
-      });
-    }
-}
-
-storeDefaultData2();*/
-
 let temporaryData: number[];
 
 const existingData = await client.pixelColor.findFirst();
 if (!existingData) {
+  log("Data not found. Initializing...");
   temporaryData = new Array(DATA_LEN).fill(255);
-  storeData(temporaryData);
+  createNewRecord(temporaryData);
 } else {
   log("Data already exists. Skipping initialization.");
   temporaryData = await fetchData()!;
@@ -89,8 +73,7 @@ if (!existingData) {
 const data = temporaryData;
 
 app.get("/image", async (_, res) => {
-  const dataArray = await fetchData();
-  res.send(JSON.stringify(dataArray));
+  res.send(JSON.stringify(data));
 });
 
 type PlacePixelRequest = {
@@ -237,32 +220,35 @@ io.engine.on("initial_headers", (headers, request) => {
   return;
 });
 
-app.post("/reset-palette", (req, res) => {
-  log(req.query.color);
-  log(req.query.secretKey);
+app.post("/reset-palette", async (req, res) => {
   if (typeof req.query.color !== "string" || typeof req.query.secretKey !== "string") {
     res.status(400).send("bad request: color or key not found in query");
     return;
   }
-  const color = req.query.color.repeat(3).split(",").slice(3);
-  if (color.length < 3) {
-    res.status(400).send("bad request: color not found in query??")
-    return;
-  }
-  color.push("255");
+  const colorString = req.query.color.repeat(3).split(",").slice(3);
+  const color = colorString.map((s) => parseInt(s));
+
   const hash = "e61b574939c12ed6bb1b0b43afe497fc57b89ff1ab66c12c1accd326523ca228";
-  if (sha256.hex(req.query.secretKey) === hash) {
-    const data = color.join(",").repeat(DATA_LEN/4).split(",");
-    if (data.some(p => p == null)) return;
-    // reset palette
-    console.log("success!");
-    res.send("success!");
-  } else {
+  if (sha256.hex(req.query.secretKey) !== hash) {
     log("wrong hash");
     res.send("wrong guess; try again");
+    return;
   }
-  return;
-})
+  console.log("success!");
+  // reset palette
+  for (let x = 0; x < IMAGE_WIDTH; x++) {
+    for (let y = 0; y < IMAGE_HEIGHT; y++) {
+      const index = (y * IMAGE_WIDTH + x) * 4;
+      data[index] = color[0];
+      data[index + 1] = color[1];
+      data[index + 2] = color[2];
+    }
+  }
+  io.of("/").to("pixel-sync").emit("re-render", data);
+  await updateDatabaseTo(data);
+  console.log("DB data length: ", (await client.pixelColor.findMany()).length);
+  res.send("success!");
+});
 
 app.put("/place-pixel", (req, res) => {
   if (!req.cookies) {
@@ -314,7 +300,7 @@ app.put("/place-pixel", (req, res) => {
   log("Accepted a request: placed one pixel");
 });
 
-async function storeData(defaultArray: number[]) {
+async function createNewRecord(defaultArray: number[]) {
   for (let rowIndex = 0; rowIndex < IMAGE_HEIGHT; rowIndex++)
     for (let colIndex = 0; colIndex < IMAGE_WIDTH; colIndex++) {
       const idx = (rowIndex * IMAGE_WIDTH + colIndex) * 4;
@@ -323,6 +309,21 @@ async function storeData(defaultArray: number[]) {
           rowIndex: rowIndex,
           colIndex: colIndex,
           data: defaultArray.slice(idx, idx + 3),
+        },
+      });
+    }
+}
+
+async function updateDatabaseTo(array: number[]) {
+  for (let rowIndex = 0; rowIndex < IMAGE_HEIGHT; rowIndex++)
+    for (let colIndex = 0; colIndex < IMAGE_WIDTH; colIndex++) {
+      const idx = rowIndex * IMAGE_WIDTH + colIndex;
+      await client.pixelColor.updateMany({
+        where: { rowIndex: rowIndex, colIndex: colIndex },
+        data: {
+          rowIndex: rowIndex,
+          colIndex: colIndex,
+          data: array.slice(idx * 4, idx * 4 + 3),
         },
       });
     }

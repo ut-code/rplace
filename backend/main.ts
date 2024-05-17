@@ -134,7 +134,7 @@ function placePixel(ev: PlacePixelRequest) {
       .some((b: boolean) => !b)
   ) {
     log(
-      `some value is not integer. r: ${color.r}, g: ${color.g}, b: ${color.b}`
+      `some value is not integer. r: ${color.r}, g: ${color.g}, b: ${color.b}`,
     );
     return;
   }
@@ -196,7 +196,7 @@ setTimeout(
       idLastWrittenMap.clear();
     }
   },
-  5 * 60 * 1000
+  5 * 60 * 1000,
 );
 
 // socket events need to be registered inside here.
@@ -263,7 +263,7 @@ app.put("/place-pixel", (req, res) => {
     res
       .status(400)
       .send(
-        `Bad Request: Last written time recorded in the server is less than ${BUTTON_COOLDOWN_SECONDS} seconds ago.`
+        `Bad Request: Last written time recorded in the server is less than ${BUTTON_COOLDOWN_SECONDS} seconds ago.`,
       );
     log("Blocked a request: request too often");
     return;

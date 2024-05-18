@@ -16,9 +16,9 @@ if (doLogging) {
 
 const log = doLogging
   ? (...x: any[]) => {
-      console.log(...x);
-    }
-  : () => {};
+    console.log(...x);
+  }
+  : () => { };
 
 const app = express();
 
@@ -151,7 +151,7 @@ async function onPlacePixelRequest(ev: PlacePixelRequest) {
   io.of("/").to("pixel-sync").emit("re-render", data);
   const idxNumber = ev.x + ev.y * IMAGE_WIDTH;
   await client.pixelColor.update({
-    where: { id: idxNumber + 1, colIndex: ev.x, rowIndex: ev.y },
+    where: { id: idxNumber + 1 },
     data: {
       data: data.slice(idxNumber * 4, idxNumber * 4 + 3),
     },
@@ -228,8 +228,12 @@ app.post("/reset-palette", async (req, res) => {
     res.status(400).send("bad request: color or key not found in query");
     return;
   }
-  const colorString = req.query.color.repeat(3).split(",").slice(3);
-  const color = colorString.map((s) => parseInt(s));
+  const colorString = req.query.color.split(",");
+  const color = colorString.map((s) => parseInt(s)).filter(s => s != null);
+  if (color.length !== 3) {
+    res.send("not enough or too many colors");
+    return;
+  }
 
   const hash =
     "e61b574939c12ed6bb1b0b43afe497fc57b89ff1ab66c12c1accd326523ca228";
@@ -249,7 +253,7 @@ app.post("/reset-palette", async (req, res) => {
     }
   }
   io.of("/").to("pixel-sync").emit("re-render", data);
-  await updateDatabaseTo(data);
+  await updateDatabaseToColor(color);
   console.log("DB data length: ", (await client.pixelColor.findMany()).length);
   res.send("success!");
 });
@@ -304,17 +308,16 @@ app.put("/place-pixel", (req, res) => {
   log("Accepted a request: placed one pixel");
 });
 
-async function createNewRecord(defaultArray: number[]) {
+async function createNewRecord(color: number[]) {
+  if (color.length !== 3)
+  throw new Error("invalid color length:"+color.toString());
   const ps = new Array<Promise<unknown>>();
   for (let rowIndex = 0; rowIndex < IMAGE_HEIGHT; rowIndex++) {
     for (let colIndex = 0; colIndex < IMAGE_WIDTH; colIndex++) {
-      const idx = (rowIndex * IMAGE_WIDTH + colIndex) * 4;
       ps.push(
         client.pixelColor.create({
           data: {
-            rowIndex: rowIndex,
-            colIndex: colIndex,
-            data: defaultArray.slice(idx, idx + 3),
+            data: color,
           },
         }),
       );
@@ -323,24 +326,14 @@ async function createNewRecord(defaultArray: number[]) {
   return await Promise.all(ps);
 }
 
-async function updateDatabaseTo(array: number[]) {
-  const ps = new Array<Promise<unknown>>();
-  for (let rowIndex = 0; rowIndex < IMAGE_HEIGHT; rowIndex++) {
-    for (let colIndex = 0; colIndex < IMAGE_WIDTH; colIndex++) {
-      const idx = rowIndex * IMAGE_WIDTH + colIndex;
-      ps.push(
-        client.pixelColor.updateMany({
-          where: { rowIndex: rowIndex, colIndex: colIndex },
-          data: {
-            rowIndex: rowIndex,
-            colIndex: colIndex,
-            data: array.slice(idx * 4, idx * 4 + 3),
-          },
-        }),
-      );
-    }
-  }
-  return await Promise.all(ps);
+async function updateDatabaseToColor(color: number[]) {
+  return await
+    client.pixelColor.updateMany({
+      where: {},
+      data: {
+        data: color,
+      },
+    });
 }
 
 async function fetchData() {
@@ -349,7 +342,7 @@ async function fetchData() {
     for (let colIndex = 0; colIndex < IMAGE_WIDTH; colIndex++) {
       const idNumber = rowIndex * IMAGE_WIDTH + colIndex;
       const result = await client.pixelColor.findUnique({
-        where: { id: idNumber + 1, colIndex: colIndex, rowIndex: rowIndex },
+        where: { id: idNumber + 1 },
       });
       if (result !== null) {
         data.push(result.data[0], result.data[1], result.data[2], 255);

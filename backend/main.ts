@@ -4,6 +4,8 @@ import cors from "cors";
 import crypto from "node:crypto";
 import cookie from "cookie";
 import cookieParser from "cookie-parser";
+import { PrismaClient } from "@prisma/client";
+import { sha256 } from "js-sha256";
 
 import { VITE_BUTTON_COOLDOWN, NODE_ENV, WEB_ORIGIN } from "./env.js";
 
@@ -54,9 +56,23 @@ const COOKIE_SAME_SITE_RESTRICTION =
   NODE_ENV === "development" ? "strict" : "strict";
 log(COOKIE_SAME_SITE_RESTRICTION);
 
-const data = new Array(DATA_LEN).fill(255);
+const client = new PrismaClient();
 
-app.get("/image", (_, res) => {
+let temporaryData: number[];
+
+const existingData = await client.pixelColor.findFirst();
+if (!existingData) {
+  log("Data not found. Initializing...");
+  temporaryData = new Array(DATA_LEN).fill(255);
+  createNewRecord(temporaryData);
+} else {
+  log("Data already exists. Skipping initialization.");
+  temporaryData = await fetchData()!;
+}
+
+const data = temporaryData;
+
+app.get("/image", async (_, res) => {
   res.send(JSON.stringify(data));
 });
 
@@ -127,12 +143,19 @@ events:
 - "re-render" : server -> client, re-renders the entire canvas (contains all pixels data)
 */
 
-function onPlacePixelRequest(ev: PlacePixelRequest) {
+async function onPlacePixelRequest(ev: PlacePixelRequest) {
   log("socket event 'place-pixel' received.");
   log(ev);
   placePixel(ev);
   // of() is for namespaces, and to() is for rooms
   io.of("/").to("pixel-sync").emit("re-render", data);
+  const idxNumber = ev.x + ev.y * IMAGE_WIDTH;
+  await client.pixelColor.update({
+    where: { id: idxNumber + 1, colIndex: ev.x, rowIndex: ev.y },
+    data: {
+      data: data.slice(idxNumber * 4, idxNumber * 4 + 3),
+    },
+  });
 }
 
 /* request validation.
@@ -164,7 +187,7 @@ setTimeout(
 
 // socket events need to be registered inside here.
 // on connection is one of the few exceptions. (i don't know other exceptions though)
-io.on("connection", (socket) => {
+io.on("connection", async (socket) => {
   socket.join("pixel-sync");
 });
 
@@ -195,6 +218,40 @@ io.engine.on("initial_headers", (headers, request) => {
   log("Granted a device an id");
 
   return;
+});
+
+app.post("/reset-palette", async (req, res) => {
+  if (
+    typeof req.query.color !== "string" ||
+    typeof req.query.secretKey !== "string"
+  ) {
+    res.status(400).send("bad request: color or key not found in query");
+    return;
+  }
+  const colorString = req.query.color.repeat(3).split(",").slice(3);
+  const color = colorString.map((s) => parseInt(s));
+
+  const hash =
+    "e61b574939c12ed6bb1b0b43afe497fc57b89ff1ab66c12c1accd326523ca228";
+  if (sha256.hex(req.query.secretKey) !== hash) {
+    log("wrong hash");
+    res.send("wrong guess; try again");
+    return;
+  }
+  console.log("success!");
+  // reset palette
+  for (let x = 0; x < IMAGE_WIDTH; x++) {
+    for (let y = 0; y < IMAGE_HEIGHT; y++) {
+      const index = (y * IMAGE_WIDTH + x) * 4;
+      data[index] = color[0];
+      data[index + 1] = color[1];
+      data[index + 2] = color[2];
+    }
+  }
+  io.of("/").to("pixel-sync").emit("re-render", data);
+  await updateDatabaseTo(data);
+  console.log("DB data length: ", (await client.pixelColor.findMany()).length);
+  res.send("success!");
 });
 
 app.put("/place-pixel", (req, res) => {
@@ -246,3 +303,61 @@ app.put("/place-pixel", (req, res) => {
   res.status(202).send("ok"); // since websocket will do the actual work, we just send status 202: Accepted
   log("Accepted a request: placed one pixel");
 });
+
+async function createNewRecord(defaultArray: number[]) {
+  const ps = new Array<Promise<unknown>>();
+  for (let rowIndex = 0; rowIndex < IMAGE_HEIGHT; rowIndex++) {
+    for (let colIndex = 0; colIndex < IMAGE_WIDTH; colIndex++) {
+      const idx = (rowIndex * IMAGE_WIDTH + colIndex) * 4;
+      ps.push(
+        client.pixelColor.create({
+          data: {
+            rowIndex: rowIndex,
+            colIndex: colIndex,
+            data: defaultArray.slice(idx, idx + 3),
+          },
+        }),
+      );
+    }
+  }
+  return await Promise.all(ps);
+}
+
+async function updateDatabaseTo(array: number[]) {
+  const ps = new Array<Promise<unknown>>();
+  for (let rowIndex = 0; rowIndex < IMAGE_HEIGHT; rowIndex++) {
+    for (let colIndex = 0; colIndex < IMAGE_WIDTH; colIndex++) {
+      const idx = rowIndex * IMAGE_WIDTH + colIndex;
+      ps.push(
+        client.pixelColor.updateMany({
+          where: { rowIndex: rowIndex, colIndex: colIndex },
+          data: {
+            rowIndex: rowIndex,
+            colIndex: colIndex,
+            data: array.slice(idx * 4, idx * 4 + 3),
+          },
+        }),
+      );
+    }
+  }
+  return await Promise.all(ps);
+}
+
+async function fetchData() {
+  const data: number[] = [];
+  for (let rowIndex = 0; rowIndex < IMAGE_HEIGHT; rowIndex++) {
+    for (let colIndex = 0; colIndex < IMAGE_WIDTH; colIndex++) {
+      const idNumber = rowIndex * IMAGE_WIDTH + colIndex;
+      const result = await client.pixelColor.findUnique({
+        where: { id: idNumber + 1, colIndex: colIndex, rowIndex: rowIndex },
+      });
+      if (result !== null) {
+        data.push(result.data[0], result.data[1], result.data[2], 255);
+      } else {
+        log("failed to fetch pixel data");
+        throw new Error();
+      }
+    }
+  }
+  return data;
+}

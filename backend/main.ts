@@ -64,7 +64,8 @@ const existingData = await client.pixelColor.findFirst();
 if (!existingData) {
   log("Data not found. Initializing...");
   temporaryData = new Array(DATA_LEN).fill(255);
-  createNewRecord(temporaryData);
+  const color = [255,255,255];
+  createNewAndFillWith(color);
 } else {
   log("Data already exists. Skipping initialization.");
   temporaryData = await fetchData()!;
@@ -129,6 +130,14 @@ function placePixel(ev: PlacePixelRequest) {
   data[first_idx + 1] = color.g;
   data[first_idx + 2] = color.b;
   data[first_idx + 3] = 255;
+  const idxNumber = ev.x + ev.y * IMAGE_WIDTH;
+  // this is async but nothing depends on this so ok
+  client.pixelColor.update({
+    where: { id: idxNumber + 1 },
+    data: {
+      data: data.slice(idxNumber * 4, idxNumber * 4 + 3),
+    },
+  });
 }
 /*
 namespaces:
@@ -149,13 +158,6 @@ async function onPlacePixelRequest(ev: PlacePixelRequest) {
   placePixel(ev);
   // of() is for namespaces, and to() is for rooms
   io.of("/").to("pixel-sync").emit("re-render", data);
-  const idxNumber = ev.x + ev.y * IMAGE_WIDTH;
-  await client.pixelColor.update({
-    where: { id: idxNumber + 1 },
-    data: {
-      data: data.slice(idxNumber * 4, idxNumber * 4 + 3),
-    },
-  });
 }
 
 /* request validation.
@@ -308,7 +310,7 @@ app.put("/place-pixel", (req, res) => {
   log("Accepted a request: placed one pixel");
 });
 
-async function createNewRecord(color: number[]) {
+async function createNewAndFillWith(color: number[]) {
   if (color.length !== 3)
   throw new Error("invalid color length:"+color.toString());
   const ps = new Array<Promise<unknown>>();
@@ -337,20 +339,26 @@ async function updateDatabaseToColor(color: number[]) {
 }
 
 async function fetchData() {
-  const data: number[] = [];
+  const ps = new Array<Promise<unknown>>();
+  const data = new Array(DATA_LEN);
   for (let rowIndex = 0; rowIndex < IMAGE_HEIGHT; rowIndex++) {
     for (let colIndex = 0; colIndex < IMAGE_WIDTH; colIndex++) {
       const idNumber = rowIndex * IMAGE_WIDTH + colIndex;
-      const result = await client.pixelColor.findUnique({
+      const idx = idNumber*4;
+      const promise = client.pixelColor.findUnique({
         where: { id: idNumber + 1 },
+      }).then((result: {id: number, data: number[]}|null)=> {
+        if (result === null) {
+          throw new Error("failed to fetch data");
+        }
+        data[idx] = result.data[0];
+        data[idx+1] = result.data[1];
+        data[idx+2] = result.data[2];
+        data[idx+3] = 255;
       });
-      if (result !== null) {
-        data.push(result.data[0], result.data[1], result.data[2], 255);
-      } else {
-        log("failed to fetch pixel data");
-        throw new Error();
-      }
+      ps.push(promise);
     }
   }
+  await Promise.all(ps);
   return data;
 }

@@ -132,12 +132,16 @@ function placePixel(ev: PlacePixelRequest) {
   data[first_idx + 3] = 255;
   const idxNumber = ev.x + ev.y * IMAGE_WIDTH;
   // this is async but nothing depends on this so ok
+  try {
   client.pixelColor.update({
     where: { id: idxNumber + 1 },
     data: {
       data: data.slice(idxNumber * 4, idxNumber * 4 + 3),
     },
   });
+  } catch {
+    console.log("database push failed");
+  }
 }
 /*
 namespaces:
